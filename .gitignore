@@ -1,0 +1,15 @@
+node_modules
+dist
+rooms/*
+!rooms/.gitkeep
+config.json
+
+*.flv
+test.mjs
+
+*.tgz
+*.tar.gz
+
+*.sqlite
+*-shm
+*-wal

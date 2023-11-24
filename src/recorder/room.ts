@@ -32,13 +32,19 @@ class Room {
     public getRecording() {
         return this.isRecording
     }
+    public destroyRoom() {
+        this.recorder?.destroyRecorder()
+        this.liveStatusListener.emit('LiveEnd')
+        this.liveStatusListener.removeAllListeners('LiveStart')
+        this.liveStatusListener.removeAllListeners('LiveEnd')
+    }
     private createNewRecorder(config: RoomConfig) {
         this.recorder = new Recorder(config.realRoomId, `${AppConfig.output}${config.name}-${config.displayRoomId}`)
         this.recorder.on('RecordStop', () => {
             this.isRecording = false
             setTimeout(() => {
                 this.liveStatusListener.tryRestartRecording()
-            }, 1000)
+            }, 500)
             printLog(`房间 ${config.displayRoomId} 录制结束`)
         })
         this.recorder.on('RecordStart', () => {
@@ -75,4 +81,8 @@ export function getRecordingStatus(room: number): boolean {
 
 export function removeRoomFromMap(room: number): boolean {
     return roomMap.delete(room)
+}
+
+export function getRoom(roomId: number): Room | undefined {
+    return roomMap.get(roomId)
 }

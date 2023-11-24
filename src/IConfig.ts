@@ -1,7 +1,8 @@
 export interface ProgramConfig {
 	output: string
 	port: number
-	credential: Credential
+	credential: Credential,
+	workerCount: number
 }
 
 export interface Credential {

@@ -12,9 +12,11 @@ for await (const item of rooms) {
     printLog(`初始化房间${item.value.displayRoomId}`)
     initRoomRecorder(item.value).then()
 }
-app.listen({
-    port: AppConfig.port
-})
+
 app.addEventListener('listen', (event) => {
     console.log(`Listening on port ${event.port}`)
+})
+
+app.listen({
+    port: AppConfig.port
 })

@@ -2,8 +2,8 @@ import { database } from '../db.ts'
 import { Context } from '../deps.ts'
 import { RoomConfig } from '../IConfig.ts'
 import { BroadcasterInfoRoot, RoomInfo } from '../IMsg.ts'
-import { initRoomRecorder, getLivingStatus, getRecordingStatus } from '../recorder/room.ts'
-import { filterInt, request } from '../utils/mod.ts'
+import { initRoomRecorder, getLivingStatus, getRecordingStatus, getRoom, removeRoomFromMap } from '../recorder/room.ts'
+import { filterInt, request, printLog } from '../utils/mod.ts'
 
 export async function addRoom(ctx: Context) {
 	const query = ctx.request.url.searchParams
@@ -44,8 +44,13 @@ export async function addRoom(ctx: Context) {
 			realRoomId: roomInfo.room_id,
 			displayRoomId
 		}
+		printLog(`添加房间 ${displayRoomId}`)
 		await database.set(['room', displayRoomId], config)
 		initRoomRecorder(config)
+		ctx.response.body = {
+			code: 0,
+			msg: ''
+		}
 	} catch (e) {
 		ctx.response.body = {
 			code: 1,
@@ -60,14 +65,20 @@ export async function delRoom(ctx: Context) {
 	if (isNaN(room)) {
 		ctx.response.body = {
 			code: 1,
-			data: '房间号格式错误'
+			msg: '房间号格式错误'
 		}
 		return
 	}
+	printLog(`删除房间 ${room}`)
 	await database.delete(['room', room])
+	const targetRoom = getRoom(room)
+	if (targetRoom) {
+		targetRoom.destroyRoom()
+	}
+	removeRoomFromMap(room)
 	ctx.response.body = {
 		code: 0,
-		data: ''
+		msg: ''
 	}
 }
 
@@ -78,7 +89,7 @@ export function getRoomStatus(ctx: Context) {
 	if (isNaN(room)) {
 		ctx.response.body = {
 			code: 1,
-			data: '房间号格式错误'
+			msg: '房间号格式错误'
 		}
 		return
 	}

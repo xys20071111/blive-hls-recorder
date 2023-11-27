@@ -17,19 +17,22 @@ export class Recorder extends EventEmitter {
 	private outputFileStream?: Deno.FsFile
 	private clipList: Array<string> = []
 	private isFirstRequest = true
-	private recordInterval?: number
+	private recordInterval = -1
 
 	constructor(roomId: number, outputPath: string) {
 		super()
 		this.roomId = roomId
 		this.outputPath = outputPath
 	}
-	public destroyRecorder() {
+	public stop() {
 		clearInterval(this.recordInterval)
-		this.outputFileStream?.close()
-		this.outputFileStream = undefined
-		this.clipList = []
-		this.emit('RecordStop')
+		this.recordInterval = -1
+		this.outputFileStream?.write(encoder.encode('#EXT-X-ENDLIST')).then(() => {
+			this.outputFileStream?.close()
+			this.outputFileStream = undefined
+			this.clipList = []
+			this.emit('RecordStop')
+		})
 	}
 	public async createFileStream() {
 		const title = (await request('/xlive/web-room/v1/index/getRoomBaseInfo', 'GET', {
@@ -79,6 +82,9 @@ export class Recorder extends EventEmitter {
 	}
 
 	async start() {
+		if (this.recordInterval !== -1) {
+			return
+		}
 		const streamUrl = await this.getStreamUrl()
 		if (!streamUrl || streamUrl.length < 10) {
 			this.emit('RecordStop')
@@ -100,13 +106,6 @@ export class Recorder extends EventEmitter {
 						'Origin': 'https://live.bilibili.com'
 					}
 				})
-				if (m3u8Res.status !== 200 && m3u8Res.status !== 206) {
-					clearInterval(this.recordInterval)
-					await this.outputFileStream?.write(encoder.encode('#EXT-X-ENDLIST'))
-					this.outputFileStream?.close()
-					this.isFirstRequest = true
-					this.emit('RecordStop')
-				}
 				const m3u8 = BliveM3u8Parser.parse(await m3u8Res.text())
 				if (this.isFirstRequest) {
 					this.isFirstRequest = false
@@ -142,7 +141,6 @@ export class Recorder extends EventEmitter {
 				}
 			} catch (err) {
 				printWarning(`房间${this.roomId} ${err}`)
-				this.emit('RecordStop')
 			}
 		}, 3500)
 	}

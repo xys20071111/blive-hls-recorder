@@ -35,10 +35,17 @@ interface IPlaylist {
     clips: Array<IClip>
 }
 
+export class InvalidM3u8Error extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'InvalidM3u8Error'
+    }
+}
+
 export class BliveM3u8Parser {
     public static parse(m3u8String: string): IPlaylist {
         if ('#EXTM3U' !== m3u8String.slice(0, 7)) {
-            throw new Error('Invalid m3u8 playlist')
+            throw new InvalidM3u8Error('Invalid m3u8 playlist')
         }
         const lines = m3u8String.split('\n')
         const mapFile = lines[5].slice(16).replace('"', '')

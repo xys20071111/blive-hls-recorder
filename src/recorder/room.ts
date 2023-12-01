@@ -15,11 +15,34 @@ class Room {
     constructor(config: RoomConfig) {
         this.room = config
         this.danmakuReceiver = new DanmakuReceiver(config.realRoomId, AppConfig.credential)
-        this.createRecorder(config)
+        this.recorder = new Recorder(config.realRoomId, `${AppConfig.output}${config.name}-${config.displayRoomId}`)
+        this.recorder.on('RecordStop', () => {
+            this.isRecording = false
+            setTimeout(() => {
+                this.isStreaming().then((isStreaming) => {
+                    if (isStreaming) {
+                        this.recorder?.start()
+                    } else {
+                        printLog(`房间 ${config.displayRoomId} 录制结束`)
+                        this.recorder?.stop()
+                        this.isLiving = false
+                    }
+                })
+            }, 500)
+        })
+        this.recorder.on('RecordStart', () => {
+            if (this.isRecording) {
+                return
+            }
+            this.isRecording = true
+            printLog(`房间 ${config.displayRoomId} 开始录制`)
+        })
         this.danmakuReceiver.on('LIVE', () => {
-            this.recorder?.start()
-            printLog(`房间 ${config.displayRoomId} 开始直播`)
-            this.isLiving = true
+            if (!this.isLiving) {
+                this.recorder?.start()
+                printLog(`房间 ${config.displayRoomId} 开始直播`)
+                this.isLiving = true
+            }
         })
         this.danmakuReceiver.on('PREPARING', () => {
             printLog(`房间 ${config.displayRoomId} 直播结束`)
@@ -66,29 +89,6 @@ class Room {
         this.recorder?.stop()
         this.danmakuReceiver.removeAllListeners('LIVE')
         this.danmakuReceiver.removeAllListeners('PREPARING')
-    }
-    private createRecorder(config: RoomConfig) {
-        this.recorder = new Recorder(config.realRoomId, `${AppConfig.output}${config.name}-${config.displayRoomId}`)
-        this.recorder.on('RecordStop', () => {
-            this.isRecording = false
-            setTimeout(() => {
-                this.isStreaming().then((isStreaming) => {
-                    if (isStreaming) {
-                        this.recorder?.start()
-                    } else {
-                        this.isLiving = false
-                    }
-                })
-            }, 500)
-            printLog(`房间 ${config.displayRoomId} 录制结束`)
-        })
-        this.recorder.on('RecordStart', () => {
-            if (this.isRecording) {
-                return
-            }
-            this.isRecording = true
-            printLog(`房间 ${config.displayRoomId} 开始录制`)
-        })
     }
 }
 

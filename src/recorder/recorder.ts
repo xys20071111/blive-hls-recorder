@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { EventEmitter } from '../deps.ts'
-import { request, getTimeString, BliveM3u8Parser, printWarning, printLog, printError } from '../utils/mod.ts'
+import { request, getTimeString, BliveM3u8Parser, printWarning, printLog, printError, InvalidM3u8Error } from '../utils/mod.ts'
 import { AppConfig } from '../config.ts'
 import { encoder } from '../Text.ts'
 
@@ -25,14 +25,17 @@ export class Recorder extends EventEmitter {
 		this.outputPath = outputPath
 	}
 	public stop() {
-		clearInterval(this.recordInterval)
-		this.recordInterval = -1
-		this.outputFileStream?.write(encoder.encode('#EXT-X-ENDLIST')).then(() => {
-			this.outputFileStream?.close()
-			this.outputFileStream = undefined
-			this.clipList = []
-			this.emit('RecordStop')
-		})
+		if (this.recordInterval !== -1) {
+			clearInterval(this.recordInterval)
+			this.recordInterval = -1
+			this.outputFileStream?.write(encoder.encode('#EXT-X-ENDLIST')).then(() => {
+				this.outputFileStream?.close()
+				this.outputFileStream = undefined
+				this.clipList = []
+				this.isFirstRequest = true
+				this.emit('RecordStop')
+			})
+		}
 	}
 	public async createFileStream() {
 		const title = (await request('/xlive/web-room/v1/index/getRoomBaseInfo', 'GET', {
@@ -100,7 +103,6 @@ export class Recorder extends EventEmitter {
 				const m3u8Res = await fetch(streamUrl, {
 					method: 'GET',
 					headers: {
-						Cookie: `buvid3=${AppConfig.credential.buvid3}; SESSDATA=${AppConfig.credential.sessdata}; bili_jct=${AppConfig.credential.csrf};`,
 						'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36',
 						'Referer': 'https://live.bilibili.com',
 						'Origin': 'https://live.bilibili.com'
@@ -108,6 +110,7 @@ export class Recorder extends EventEmitter {
 				})
 				const m3u8 = BliveM3u8Parser.parse(await m3u8Res.text())
 				if (this.isFirstRequest) {
+					// 写文件头
 					this.isFirstRequest = false
 					await this.outputFileStream?.write(encoder.encode(`#EXT-X-MEDIA-SEQUENCE:${m3u8.clips[0].filename.replace('.m4s', '')}\n`))
 					await this.outputFileStream?.write(encoder.encode(`#EXT-X-MAP:URI="${this.clipDir}${m3u8.mapFile}"\n`))
@@ -118,11 +121,12 @@ export class Recorder extends EventEmitter {
 							'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36',
 							'Referer': 'https://live.bilibili.com',
 							'Origin': 'https://live.bilibili.com',
-							Cookie: `buvid3=${AppConfig.credential.buvid3}; SESSDATA=${AppConfig.credential.sessdata}; bili_jct=${AppConfig.credential.csrf};`,
 						}
 					})
 				}
+
 				for (const item of m3u8.clips) {
+					// 下载片段
 					if (item.filename && !this.clipList.includes(item.filename)) {
 						this.clipList.push(item.filename)
 						await this.outputFileStream!.write(encoder.encode(`${item.info}\n${this.clipDir}${item.filename}\n`))
@@ -133,7 +137,6 @@ export class Recorder extends EventEmitter {
 								'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36',
 								'Referer': 'https://live.bilibili.com',
 								'Origin': 'https://live.bilibili.com',
-								Cookie: `buvid3=${AppConfig.credential.buvid3}; SESSDATA=${AppConfig.credential.sessdata}; bili_jct=${AppConfig.credential.csrf};`,
 							}
 						})
 						counter++
@@ -141,6 +144,9 @@ export class Recorder extends EventEmitter {
 				}
 			} catch (err) {
 				printWarning(`房间${this.roomId} ${err}`)
+				if (err instanceof InvalidM3u8Error) {
+					this.emit('RecordStop')
+				}
 			}
 		}, 3500)
 	}

@@ -8,6 +8,7 @@ export async function downloadFile(urlString: string, dest: string, headers: Rec
         const req = await fetch(url, { headers })
         const content = await req.arrayBuffer()
         await destStream.write(new Uint8Array(content))
+        destStream.close()
     } catch {
         printError(`${urlString} 下载失败, 重试`)
         await downloadFile(urlString, dest, headers)

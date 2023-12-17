@@ -18,6 +18,7 @@ export class Recorder extends EventEmitter {
 	private clipList: Array<string> = []
 	private isFirstRequest = true
 	private recordInterval = -1
+	private isRecording = false
 
 	constructor(roomId: number, outputPath: string) {
 		super()
@@ -25,7 +26,7 @@ export class Recorder extends EventEmitter {
 		this.outputPath = outputPath
 	}
 	public stop() {
-		if (this.recordInterval !== -1) {
+		if (this.isRecording) {
 			clearInterval(this.recordInterval)
 			this.recordInterval = -1
 			this.outputFileStream?.write(encoder.encode('#EXT-X-ENDLIST')).then(() => {
@@ -85,9 +86,10 @@ export class Recorder extends EventEmitter {
 	}
 
 	async start() {
-		if (this.recordInterval !== -1) {
+		if (this.isRecording) {
 			return
 		}
+		this.isRecording = true
 		const streamUrl = await this.getStreamUrl()
 		if (!streamUrl || streamUrl.length < 10) {
 			this.emit('RecordStop')

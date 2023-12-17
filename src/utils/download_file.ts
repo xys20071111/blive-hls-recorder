@@ -7,6 +7,10 @@ export async function downloadFile(urlString: string, dest: string, headers: Rec
         const url = new URL(urlString)
         const req = await fetch(url, { headers })
         const content = await req.arrayBuffer()
+        if (content.byteLength === 0) {
+            printError('下载内容为空')
+            throw new Error('下载内容为空')
+        }
         await destStream.write(new Uint8Array(content))
         destStream.close()
     } catch {

@@ -68,6 +68,10 @@ class Room {
         })
         this.danmakuReceiver.connect()
     }
+    public async restartRecorder() {
+        await this.recorder?.stop()
+        await this.recorder?.start()
+    }
     private async isStreaming() {
         const data = await request('/room/v1/Room/room_init', 'GET', {
             id: this.room.displayRoomId

@@ -28,13 +28,14 @@ class Room {
                         this.isLiving = false
                     }
                 })
-            }, 500)
+            }, 1000)
         })
         this.recorder.on('RecordStart', () => {
             if (this.isRecording) {
                 return
             }
             this.isRecording = true
+            this.recorder?.start()
             printLog(`房间 ${config.displayRoomId} 开始录制`)
         })
         this.danmakuReceiver.on('LIVE', () => {

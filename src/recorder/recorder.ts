@@ -4,12 +4,6 @@ import { request, getTimeString, BliveM3u8Parser, printWarning, printLog, printE
 import { AppConfig } from '../config.ts'
 import { encoder } from '../Text.ts'
 
-const workerPool: Array<Worker> = []
-for (let i = 0; i < AppConfig.workerCount; i++) {
-	const worker = new Worker(import.meta.resolve('./download_worker.ts'), { type: 'module' })
-	workerPool.push(worker)
-}
-
 export class Recorder extends EventEmitter {
 	private roomId: number
 	private outputPath: string
@@ -19,11 +13,16 @@ export class Recorder extends EventEmitter {
 	private isFirstRequest = true
 	private recordInterval = -1
 	private isRecording = false
+	private workerPool: Array<Worker> = []
 
 	constructor(roomId: number, outputPath: string) {
 		super()
 		this.roomId = roomId
 		this.outputPath = outputPath
+		for (let i = 0; i < AppConfig.workerCount; i++) {
+			const worker = new Worker(import.meta.resolve('./download_worker.ts'), { type: 'module' })
+			this.workerPool.push(worker)
+		}
 	}
 	public stop() {
 		if (this.isRecording) {
@@ -116,7 +115,7 @@ export class Recorder extends EventEmitter {
 					this.isFirstRequest = false
 					await this.outputFileStream?.write(encoder.encode(`#EXT-X-MEDIA-SEQUENCE:${m3u8.clips[0].filename.replace('.m4s', '')}\n`))
 					await this.outputFileStream?.write(encoder.encode(`#EXT-X-MAP:URI="${this.clipDir}${m3u8.mapFile}"\n`))
-					workerPool[0].postMessage({
+					this.workerPool[0].postMessage({
 						url: streamUrl.replace('index.m3u8', m3u8.mapFile),
 						path: `${this.clipDir}${m3u8.mapFile}`,
 						heders: {
@@ -132,7 +131,7 @@ export class Recorder extends EventEmitter {
 					if (item.filename && !this.clipList.includes(item.filename)) {
 						this.clipList.push(item.filename)
 						await this.outputFileStream!.write(encoder.encode(`${item.info}\n${this.clipDir}${item.filename}\n`))
-						workerPool[counter % AppConfig.workerCount].postMessage({
+						this.workerPool[counter % AppConfig.workerCount].postMessage({
 							url: streamUrl.replace('index.m3u8', item.filename),
 							path: `${this.clipDir}${item.filename}`,
 							heders: {

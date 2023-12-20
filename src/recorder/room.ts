@@ -22,6 +22,7 @@ class Room {
                 this.isStreaming().then((isStreaming) => {
                     if (isStreaming) {
                         this.recorder?.start()
+                        this.isRecording = true
                     } else {
                         printLog(`房间 ${config.displayRoomId} 录制结束`)
                         this.recorder?.stop()

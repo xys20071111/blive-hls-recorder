@@ -91,6 +91,7 @@ export class Recorder extends EventEmitter {
 		this.isRecording = true
 		const streamUrl = await this.getStreamUrl()
 		if (!streamUrl || streamUrl.length < 10) {
+			this.stop()
 			this.emit('RecordStop')
 			return
 		}

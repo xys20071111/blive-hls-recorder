@@ -21,41 +21,42 @@ class Room {
             setTimeout(() => {
                 this.isStreaming().then((isStreaming) => {
                     if (isStreaming) {
-                        this.recorder?.start()
-                        this.isRecording = true
+                        this.recorder?.start().then(() => {
+                            this.isRecording = true
+                        })
                     } else {
-                        printLog(`房间 ${config.displayRoomId} 录制结束`)
                         this.recorder?.stop()
+                        printLog(`房间 ${config.displayRoomId} 录制结束`)
                         this.isLiving = false
                     }
                 })
             }, 1000)
         })
         this.recorder.on('RecordStart', () => {
-            if (this.isRecording) {
-                return
-            }
             this.isRecording = true
-            this.recorder?.start()
-            printLog(`房间 ${config.displayRoomId} 开始录制`)
+            this.recorder?.start().then(() => {
+                printLog(`房间 ${config.displayRoomId} 开始录制`)
+            })
         })
         this.danmakuReceiver.on('LIVE', () => {
             if (!this.isLiving) {
-                this.recorder?.start()
-                printLog(`房间 ${config.displayRoomId} 开始直播`)
-                this.isLiving = true
+                this.recorder?.start().then(() => {
+                    printLog(`房间 ${config.displayRoomId} 开始直播`)
+                    this.isLiving = true
+                })
             }
         })
         this.danmakuReceiver.on('PREPARING', () => {
-            printLog(`房间 ${config.displayRoomId} 直播结束`)
             this.recorder?.stop()
+            printLog(`房间 ${config.displayRoomId} 直播结束`)
             this.isLiving = false
         })
         this.danmakuReceiver.on('closed', () => {
             this.isStreaming().then((isStreaming) => {
                 if (isStreaming) {
-                    this.recorder?.start()
-                    this.isLiving = true
+                    this.recorder?.start().then(() => {
+                        this.isLiving = true
+                    })
                 } else {
                     this.recorder?.stop()
                     this.isLiving = false
@@ -71,7 +72,7 @@ class Room {
         this.danmakuReceiver.connect()
     }
     public async restartRecorder() {
-        await this.recorder?.stop()
+        this.recorder?.stop()
         await this.recorder?.start()
     }
     private async isStreaming() {

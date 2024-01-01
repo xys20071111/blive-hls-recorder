@@ -44,12 +44,20 @@ export async function addRoom(ctx: Context) {
             realRoomId: roomInfo.room_id,
             displayRoomId
         }
-        printLog(`添加房间 ${displayRoomId}`)
-        await database.set(['room', displayRoomId], config)
-        initRoomRecorder(config)
-        ctx.response.body = {
-            code: 0,
-            msg: ''
+        const existence = await database.get(['room', displayRoomId])
+        if (!existence.value) {
+            printLog(`添加房间 ${displayRoomId}`)
+            await database.set(['room', displayRoomId], config)
+            initRoomRecorder(config)
+            ctx.response.body = {
+                code: 0,
+                msg: ''
+            }
+        } else {
+            ctx.response.body = {
+                code: 1,
+                msg: '房间已存在'
+            }
         }
     } catch (e) {
         ctx.response.body = {
@@ -73,7 +81,7 @@ export async function delRoom(ctx: Context) {
     await database.delete(['room', room])
     const targetRoom = getRoom(room)
     if (targetRoom) {
-        targetRoom.destroyRoom()
+        await targetRoom.destroyRoom()
     }
     removeRoomFromMap(room)
     ctx.response.body = {

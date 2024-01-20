@@ -31,7 +31,8 @@ async function request(path: string, method: 'GET' | 'POST', data: object) {
 		const res = await fetch(`https://api.live.bilibili.com${method === 'POST' ? path : pathBuilder(path, data)}`, {
 			method,
 			headers: method === 'POST' ? POST_HEADER : GET_HEADER,
-			body: method === 'POST' ? JSON.stringify(data) : undefined
+			body: method === 'POST' ? JSON.stringify(data) : undefined,
+			cache: 'no-cache'
 		})
 		if (res.ok) {
 			const data = await res.json()

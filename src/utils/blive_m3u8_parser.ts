@@ -44,7 +44,7 @@ export class InvalidM3u8Error extends Error {
 
 export class BliveM3u8Parser {
     public static parse(m3u8String: string): IPlaylist {
-        if ('#EXTM3U' !== m3u8String.slice(0, 7)) {
+        if (!m3u8String || '#EXTM3U' !== m3u8String.slice(0, 7)) {
             throw new InvalidM3u8Error('Invalid m3u8 playlist')
         }
         const lines = m3u8String.split('\n')

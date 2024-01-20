@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { EventEmitter } from '../deps.ts'
-import { request, getTimeString, BliveM3u8Parser, printWarning, printLog, isStreaming } from '../utils/mod.ts'
+import { request, getTimeString, BliveM3u8Parser, printWarning, printLog, isStreaming, InvalidM3u8Error } from '../utils/mod.ts'
 import { AppConfig } from '../config.ts'
 import { encoder } from '../Text.ts'
 import { FETCH_STREAM_HEADER, LIVE_DIDN_START, FAILED_TO_GET_STREAM_URL } from './constants.ts'
@@ -61,6 +61,9 @@ export class Recorder extends EventEmitter {
 		})).data
 		if (data.live_status !== 1) {
 			throw new Error(LIVE_DIDN_START)
+		}
+		if (!data.playurl_info) {
+			throw new Error(FAILED_TO_GET_STREAM_URL)
 		}
 		const host = data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].host
 		const extra = data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].extra
@@ -130,7 +133,18 @@ export class Recorder extends EventEmitter {
 					}
 				}
 			} catch (err) {
+				const error: Error = err
 				printWarning(`房间${this.roomId} ${err}`)
+				if (error instanceof InvalidM3u8Error) {
+					while (true) {
+						try {
+							streamUrl = await this.getStreamUrl()
+							break
+						} catch (_) {
+							// Do nothing here
+						}
+					}
+				}
 				this.emit('CheckLiveStatus')
 			}
 		}, 3500)

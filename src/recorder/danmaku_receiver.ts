@@ -1,4 +1,4 @@
-import { brotli, EventEmitter } from '../deps.ts'
+import { brotli } from '../deps.ts'
 import { Credential } from '../IConfig.ts'
 import { printLog } from '../utils/mod.ts'
 
@@ -20,7 +20,7 @@ enum DANMAKU_TYPE {
 const encoder = new TextEncoder()
 const decoder = new TextDecoder('utf-8')
 
-export class DanmakuReceiver extends EventEmitter {
+export class DanmakuReceiver extends EventTarget {
   private roomId: number
   private ws: WebSocket | null = null
   private credential: Credential
@@ -47,7 +47,7 @@ export class DanmakuReceiver extends EventEmitter {
       )).json()
       // 检查获取到的信息是否正常
       if (!roomConfig.data) {
-        this.emit('closed', '房间数据异常')
+        this.dispatchEvent(new CustomEvent('closed', { detail: '房间数据异常' }))
         return
       }
       this.ws = new WebSocket(`wss://${roomConfig.data.host_list[0].host}:${roomConfig.data.host_list[0].wss_port}/sub`)
@@ -67,10 +67,10 @@ export class DanmakuReceiver extends EventEmitter {
         }
       }
       this.ws.onclose = () => {
-        this.emit('closed', '连接断开')
+        this.dispatchEvent(new CustomEvent('closed', { detail: '连接断开' }))
       }
     } catch {
-      this.emit('closed', 'fetch房间信息失败')
+      this.dispatchEvent(new CustomEvent('closed', { detail: 'fetch房间信息失败' }))
     }
   }
   private generatePacket(
@@ -112,7 +112,7 @@ export class DanmakuReceiver extends EventEmitter {
             this.ws.send(this.generatePacket(1, 2, heartbeatPayload))
           }
         }, 30000)
-        this.emit('connected')
+        this.dispatchEvent(new Event('connected'))
         break
       case DANMAKU_TYPE.DATA:
         this.dataProcesser(packetProtocol, packetPayload)
@@ -126,7 +126,7 @@ export class DanmakuReceiver extends EventEmitter {
       case DANMAKU_PROTOCOL.JSON: {
         // 这些数据大都没用，但还是留着吧
         const jsonData = JSON.parse(decoder.decode(packetPayload))
-        this.emit(jsonData.cmd, jsonData.data)
+        this.dispatchEvent(new CustomEvent(jsonData.cmd, { detail: jsonData.data }))
         break
       }
       case DANMAKU_PROTOCOL.BROTLI:
@@ -142,7 +142,7 @@ export class DanmakuReceiver extends EventEmitter {
       const packetData = resultRaw.slice(offset + 16, offset + length)
       const data = JSON.parse(decoder.decode(packetData))
       const cmd = data.cmd.split(':')[0]
-      this.emit(cmd, this.roomId, data.info || data.data)
+      this.dispatchEvent(new CustomEvent(cmd, { detail: { room: this.roomId, data: data.info || data.data } }))
       offset += length
     }
   }
@@ -151,7 +151,7 @@ export class DanmakuReceiver extends EventEmitter {
       this.ws.onclose = () => { }
       this.ws.close()
       this.ws = null
-      this.emit('closed', '手动关闭连接')
+      this.dispatchEvent(new CustomEvent('closed', { detail: '手动断开' }))
     }
   }
 }

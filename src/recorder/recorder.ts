@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { EventEmitter } from '../deps.ts'
 import { request, getTimeString, BliveM3u8Parser, printWarning, printLog, isStreaming, InvalidM3u8Error } from '../utils/mod.ts'
 import { AppConfig } from '../config.ts'
 import { encoder } from '../Text.ts'
@@ -7,7 +6,7 @@ import { FETCH_STREAM_HEADER, LIVE_DIDN_START, FAILED_TO_GET_STREAM_URL } from '
 import { WorkerPool } from './work_pool.ts'
 import { sleep } from '../utils/sleep.ts'
 
-export class Recorder extends EventEmitter {
+export class Recorder extends EventTarget {
 	private roomId: number
 	private outputPath: string
 	private clipDir?: string
@@ -31,7 +30,7 @@ export class Recorder extends EventEmitter {
 		this.outputFileStream = undefined
 		this.clipList = []
 		this.isFirstRequest = true
-		this.emit('RecordStop')
+		this.dispatchEvent(new Event('RecordStop'))
 	}
 
 	private async createFileStream() {
@@ -59,21 +58,24 @@ export class Recorder extends EventEmitter {
 			codec: '0',
 			panorama: '1'
 		})).data
-		if (data.live_status !== 1) {
-			throw new Error(LIVE_DIDN_START)
-		}
-		if (!data.playurl_info) {
-			throw new Error(FAILED_TO_GET_STREAM_URL)
-		}
-		const host = data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].host
-		const extra = data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].extra
-		const path = data.playurl_info.playurl.stream[0].format[0].codec[0].base_url
-		if (host && extra && path) {
-			return `${host}${path}${extra}`
+		// 处理直播流信息
+		try {
+			if (data.live_status !== 1) {
+				throw new Error(LIVE_DIDN_START)
+			}
+			if (!data.playurl_info) {
+				throw new Error(FAILED_TO_GET_STREAM_URL)
+			}
+			const host = data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].host
+			const extra = data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].extra
+			const path = data.playurl_info.playurl.stream[0].format[0].codec[0].base_url
+			if (host && extra && path) {
+				return `${host}${path}${extra}`
+			}
+		} catch {
+			// Do nothing here.
 		}
 		throw new Error(FAILED_TO_GET_STREAM_URL)
-		// 处理直播流信息
-
 	}
 
 	public async start() {
@@ -82,7 +84,12 @@ export class Recorder extends EventEmitter {
 		}
 		this.isRecording = true
 		// 创建新文件
-		await this.createFileStream()
+		try {
+			await this.createFileStream()
+		} catch {
+			this.dispatchEvent(new Event('CheckLiveStatus'))
+			return
+		}
 		await this.outputFileStream!.write(encoder.encode('#EXTM3U\n#EXT-X-VERSION:7\n#EXT-X-START:TIME-OFFSET=0\n#EXT-X-TARGETDURATION:1\n'))
 		// 获取直播流
 		let streamUrl: string
@@ -145,7 +152,7 @@ export class Recorder extends EventEmitter {
 						}
 					}
 				}
-				this.emit('CheckLiveStatus')
+				this.dispatchEvent(new Event('CheckLiveStatus'))
 			}
 		}, 3500)
 	}

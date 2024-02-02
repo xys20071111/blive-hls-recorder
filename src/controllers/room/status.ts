@@ -1,4 +1,4 @@
-import { Context } from '../../deps.ts'
+import { Context } from 'oak'
 import { getLivingStatus, getRecordingStatus } from '../../recorder/room.ts'
 import { filterInt } from '../../utils/mod.ts'
 

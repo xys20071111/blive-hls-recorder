@@ -44,24 +44,28 @@ export class InvalidM3u8Error extends Error {
 
 export class BliveM3u8Parser {
     public static parse(m3u8String: string): IPlaylist {
-        if (!m3u8String || '#EXTM3U' !== m3u8String.slice(0, 7)) {
-            throw new InvalidM3u8Error('Invalid m3u8 playlist')
-        }
-        const lines = m3u8String.split('\n')
-        const mapFile = lines[5].slice(16).replace('"', '')
-        const clips: Array<IClip> = []
-        for (let i = 0; i < lines.length; i += 1) {
-            if (lines[i].startsWith('#EXTINF')) {
-                const clip: IClip = {
-                    info: lines[i],
-                    filename: lines[i + 1]
-                }
-                clips.push(clip)
+        try {
+            if ('#EXTM3U' !== m3u8String.slice(0, 7)) {
+                throw new InvalidM3u8Error('Invalid m3u8 playlist')
             }
-        }
-        return {
-            mapFile,
-            clips
+            const lines = m3u8String.split('\n')
+            const mapFile = lines[5].slice(16).replace('"', '')
+            const clips: Array<IClip> = []
+            for (let i = 0; i < lines.length; i += 1) {
+                if (lines[i].startsWith('#EXTINF')) {
+                    const clip: IClip = {
+                        info: lines[i],
+                        filename: lines[i + 1]
+                    }
+                    clips.push(clip)
+                }
+            }
+            return {
+                mapFile,
+                clips
+            }
+        } catch {
+            throw new InvalidM3u8Error('Invalid m3u8 playlist')
         }
     }
 }

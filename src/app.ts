@@ -1,4 +1,4 @@
-import { Application, Router } from './deps.ts'
+import { Application, Router } from 'oak'
 import { addRoom, delRoom } from './controllers/room/add_and_remove.ts'
 import { getRoomStatus } from './controllers/room/status.ts'
 import { restartRecorder } from './controllers/room/recorder_controller.ts'

@@ -4,6 +4,7 @@ import { Recorder } from './recorder.ts'
 import { DanmakuReceiver } from './danmaku_receiver.ts'
 import { printLog, isStreaming } from '../utils/mod.ts'
 import { sleep } from '../utils/sleep.ts'
+import { RECORD_EVENT_CODE } from './recorder.ts'
 
 class Room {
     private recorder: Recorder
@@ -16,7 +17,7 @@ class Room {
         this.room = config
         this.danmakuReceiver = new DanmakuReceiver(config.realRoomId, AppConfig.credential)
         this.recorder = new Recorder(config.realRoomId, `${AppConfig.output}${config.name}-${config.displayRoomId}`)
-        this.recorder.addEventListener('CheckLiveStatus', async () => {
+        this.recorder.addEventListener(RECORD_EVENT_CODE.CHECK_LIVE_STATE, async () => {
             await sleep(1000)
             const streaming = await isStreaming(this.room.realRoomId)
             if (streaming) {
@@ -25,9 +26,8 @@ class Room {
                 this.recorder.stop()
             }
         })
-        this.recorder.addEventListener('RecordStart', async () => {
+        this.recorder.addEventListener(RECORD_EVENT_CODE.RECORD_START, () => {
             this.isRecording = true
-            await this.recorder.start()
             printLog(`房间 ${config.displayRoomId} 开始录制`)
         })
         this.danmakuReceiver.addEventListener('LIVE', async () => {

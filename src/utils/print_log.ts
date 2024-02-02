@@ -1,4 +1,5 @@
 // deno-lint-ignore-file
+import { red, yellow } from 'fmt/colors.ts'
 import { getTimeString } from './time.ts'
 
 export function printLog(log: any) {
@@ -6,9 +7,9 @@ export function printLog(log: any) {
 }
 
 export function printWarning(log: any) {
-	console.warn(`${getTimeString()} ${log}`)
+	console.warn(yellow(`${getTimeString()} ${log}`))
 }
 
 export function printError(log: any) {
-	console.error(`${getTimeString()} ${log}`)
+	console.error(red(`${getTimeString()} ${log}`))
 }

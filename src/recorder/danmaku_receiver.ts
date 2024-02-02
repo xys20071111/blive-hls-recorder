@@ -1,4 +1,4 @@
-import { brotli } from '../deps.ts'
+import * as brotli from 'brotli'
 import { Credential } from '../IConfig.ts'
 import { printLog } from '../utils/mod.ts'
 

@@ -3,6 +3,9 @@ import { printError } from './print_log.ts'
 
 // deno-lint-ignore-file no-explicit-any
 export async function downloadFile(urlString: string, dest: string, headers: Record<string, string>) {
+    if (urlString.length === 0) {
+        return
+    }
     for (let i = 0; i < AppConfig.downloadRetry; i++) {
         try {
             const destStream = await Deno.create(dest)

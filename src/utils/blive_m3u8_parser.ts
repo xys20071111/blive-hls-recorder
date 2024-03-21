@@ -49,7 +49,14 @@ export class BliveM3u8Parser {
                 throw new InvalidM3u8Error('Invalid m3u8 playlist')
             }
             const lines = m3u8String.split('\n')
-            const mapFile = lines[5] ? lines[5].slice(16).replace('"', '') : ""
+            const mapFile: string = (() => {
+                for (const line of lines) {
+                    if (line.includes('EXT-X-MAP')) {
+                        return line.slice(16).replace('"', '')
+                    }
+                }
+                return ''
+            })()
             const clips: Array<IClip> = []
             for (let i = 0; i < lines.length; i += 1) {
                 if (lines[i].startsWith('#EXTINF')) {

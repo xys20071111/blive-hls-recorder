@@ -136,9 +136,10 @@ export class Recorder extends EventTarget {
 						'Origin': 'https://live.bilibili.com'
 					}
 				})
-				const m3u8 = BliveM3u8Parser.parse(await m3u8Res.text())
+				const m3u8Text = await m3u8Res.text()
+				const m3u8 = BliveM3u8Parser.parse(m3u8Text)
 				// 写文件头
-				if (this.isFirstRequest) {
+				if (this.isFirstRequest && m3u8.clips && m3u8.clips[0]) {
 					this.isFirstRequest = false
 					await this.outputFileStream?.write(encoder.encode(`#EXT-X-MEDIA-SEQUENCE:${m3u8.clips[0].filename.replace('.m4s', '')}\n`))
 					await this.outputFileStream?.write(encoder.encode(`#EXT-X-MAP:URI="${this.clipDir}${m3u8.mapFile}"\n`))
@@ -147,6 +148,9 @@ export class Recorder extends EventTarget {
 						path: `${this.clipDir}${m3u8.mapFile}`,
 						headers: FETCH_STREAM_HEADER
 					})
+				} else {
+					printWarning(`房间${this.roomId} 异常的初始m3u8`)
+					printWarning(m3u8Text)
 				}
 				// 下载片段
 				for (const item of m3u8.clips) {

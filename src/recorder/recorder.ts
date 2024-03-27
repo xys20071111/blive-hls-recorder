@@ -130,27 +130,40 @@ export class Recorder extends EventTarget {
 			try {
 				const m3u8Res = await fetch(this.streamUrl, {
 					method: 'GET',
-					headers: {
-						'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36',
-						'Referer': 'https://live.bilibili.com',
-						'Origin': 'https://live.bilibili.com'
-					}
+					headers: FETCH_STREAM_HEADER
 				})
-				const m3u8Text = await m3u8Res.text()
+				let m3u8Text = await m3u8Res.text()
+				if (m3u8Text.includes('#EXT-X-STREAM-INF')) {
+					const lines = m3u8Text.split('\n')
+					const targetUrl = (() => {
+						for (const line of lines) {
+							if (line.startsWith('https')) {
+								return line
+							}
+						}
+						return ''
+					})()
+					m3u8Text = await (await fetch(targetUrl, {
+						method: 'GET',
+						headers: FETCH_STREAM_HEADER
+					})).text()
+				}
 				const m3u8 = BliveM3u8Parser.parse(m3u8Text)
 				// 写文件头
-				if (this.isFirstRequest && m3u8.clips && m3u8.clips[0]) {
-					this.isFirstRequest = false
-					await this.outputFileStream?.write(encoder.encode(`#EXT-X-MEDIA-SEQUENCE:${m3u8.clips[0].filename.replace('.m4s', '')}\n`))
-					await this.outputFileStream?.write(encoder.encode(`#EXT-X-MAP:URI="${this.clipDir}${m3u8.mapFile}"\n`))
-					this.workerPool.dispatchJob({
-						url: this.streamUrl.replace('index.m3u8', m3u8.mapFile),
-						path: `${this.clipDir}${m3u8.mapFile}`,
-						headers: FETCH_STREAM_HEADER
-					})
-				} else {
-					printWarning(`房间${this.roomId} 异常的初始m3u8`)
-					printWarning(m3u8Text)
+				if (this.isFirstRequest) {
+					if (m3u8.clips && m3u8.clips[0]) {
+						this.isFirstRequest = false
+						await this.outputFileStream?.write(encoder.encode(`#EXT-X-MEDIA-SEQUENCE:${m3u8.clips[0].filename.replace('.m4s', '')}\n`))
+						await this.outputFileStream?.write(encoder.encode(`#EXT-X-MAP:URI="${this.clipDir}${m3u8.mapFile}"\n`))
+						this.workerPool.dispatchJob({
+							url: this.streamUrl.replace('index.m3u8', m3u8.mapFile),
+							path: `${this.clipDir}${m3u8.mapFile}`,
+							headers: FETCH_STREAM_HEADER
+						})
+					} else {
+						printWarning(`房间${this.roomId} 异常的初始m3u8`)
+						printWarning(m3u8Text)
+					}
 				}
 				// 下载片段
 				for (const item of m3u8.clips) {

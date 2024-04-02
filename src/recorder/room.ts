@@ -72,6 +72,9 @@ class Room {
         await this.recorder.stop()
         await this.danmakuReceiver.close()
     }
+    public getStreamerName() {
+        return this.room.name
+    }
 }
 
 const roomMap = new Map<number, Room>()
@@ -102,4 +105,31 @@ export function removeRoomFromMap(room: number): boolean {
 
 export function getRoom(roomId: number): Room | undefined {
     return roomMap.get(roomId)
+}
+
+export function getAllRoom(): Array<{
+    room: number
+    streamer: string
+    isRecording: boolean
+    isLiving: boolean
+}> {
+    const result: Array<{
+        room: number
+        streamer: string
+        isRecording: boolean
+        isLiving: boolean
+    }> = []
+    for (const roomId of roomMap.keys()) {
+        const room = roomMap.get(roomId) as Room
+        const isRecording = room.getRecording()
+        const isLiving = room.getLiving()
+        const streamer = room.getStreamerName()
+        result.push({
+            room: roomId,
+            streamer,
+            isLiving,
+            isRecording
+        })
+    }
+    return result
 }

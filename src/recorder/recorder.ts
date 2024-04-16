@@ -39,6 +39,9 @@ export class Recorder extends EventTarget {
 		this.roomId = roomId
 		this.outputPath = outputPath
 	}
+	public getRecordingState(): boolean {
+		return this.isRecording
+	}
 	public async stop() {
 		clearInterval(this.recordInterval)
 		this.recordInterval = -1
@@ -110,7 +113,7 @@ export class Recorder extends EventTarget {
 				const err: Error = e
 				printWarning(`房间 ${this.roomId}`)
 				printWarning(err.stack)
-				await sleep(1000)
+				await sleep(5000)
 			}
 		}
 		// 创建新文件

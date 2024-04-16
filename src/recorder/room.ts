@@ -66,7 +66,7 @@ class Room {
         return this.isLiving
     }
     public getRecording() {
-        return this.isRecording
+        return this.recorder.getRecordingState()
     }
     public async destroyRoom() {
         await this.recorder.stop()

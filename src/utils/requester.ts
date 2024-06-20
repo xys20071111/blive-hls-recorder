@@ -1,19 +1,16 @@
 import { AppConfig } from '../config.ts'
 import { printError } from './mod.ts'
 
-const POST_HEADER = {
-	Cookie: `buvid3=${AppConfig.credential.buvid3}; SESSDATA=${AppConfig.credential.sessdata}; bili_jct=${AppConfig.credential.csrf}`,
-	'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36',
-	'host': 'api.live.bilibili.com',
-	'Referer': 'https://live.bilibili.com',
-	'Content-Type': 'application/json'
-}
-
 const GET_HEADER = {
 	Cookie: `buvid3=${AppConfig.credential.buvid3}; SESSDATA=${AppConfig.credential.sessdata}; bili_jct=${AppConfig.credential.csrf};`,
 	'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36',
 	'host': 'api.live.bilibili.com',
 	'Referer': 'https://live.bilibili.com'
+}
+
+const POST_HEADER = {
+	...GET_HEADER,
+	'Content-Type': 'application/json'
 }
 
 

@@ -2,7 +2,7 @@ import { database } from '../../db.ts'
 import { Context } from 'oak'
 import { filterInt, printLog } from '../../utils/mod.ts'
 import { RoomConfig } from "../../IConfig.ts"
-import { deRoomRecorder, initRoomRecorder } from "../../recorder/room.ts"
+import { getRoom } from "../../recorder/room.ts"
 
 export async function setAutoRecord(ctx: Context) {
     const query = ctx.request.url.searchParams
@@ -28,8 +28,8 @@ export async function setAutoRecord(ctx: Context) {
         printLog(`修改 ${displayRoomId} 的自动录制设置为 ${autoRecord}`)
         existence.value.autoRecord = autoRecord
         await database.set(['room', displayRoomId], existence.value)
-        deRoomRecorder(displayRoomId)
-        initRoomRecorder(existence.value)
+        const room = getRoom(displayRoomId)
+        room?.setAutoRecord(autoRecord)
         ctx.response.body = {
             code: 0,
             msg: `修改 ${displayRoomId} 的自动录制设置为 ${autoRecord}`

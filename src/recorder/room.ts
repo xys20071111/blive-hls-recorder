@@ -9,7 +9,7 @@ import { RECORD_EVENT_CODE } from './recorder.ts'
 class Room {
     private recorder: Recorder
     private isRecording = false
-    private isLiving = false
+    private isStreaming = false
     private danmakuReceiver: DanmakuReceiver
     private room: RoomConfig
 
@@ -35,25 +35,26 @@ class Room {
             if (this.room.autoRecord) {
                 await this.recorder.start()
             }
-            this.isLiving = true
+            this.isStreaming = true
         })
         this.danmakuReceiver.addEventListener('PREPARING', async () => {
             await this.recorder.stop()
             printLog(`房间 ${config.displayRoomId} 直播结束`)
-            this.isLiving = false
+            this.isStreaming = false
         })
         this.danmakuReceiver.addEventListener('closed', async () => {
             await this.danmakuReceiver.connect()
             const streaming = await isStreaming(this.room.realRoomId)
             if (streaming) {
                 await this.recorder.start()
-                this.isLiving = true
+                this.isStreaming = true
             } else {
                 await this.recorder.stop()
-                this.isLiving = false
+                this.isStreaming = false
             }
         })
         isStreaming(this.room.realRoomId).then((isStreaming) => {
+            this.isStreaming = isStreaming
             if (isStreaming && this.room.autoRecord) {
                 this.recorder.start()
             }
@@ -61,11 +62,21 @@ class Room {
         this.danmakuReceiver.connect()
     }
     public async restartRecorder() {
-        await this.recorder.stop()
-        await this.recorder.start()
+        if (this.isStreaming) {
+            await this.recorder.stop()
+            await this.recorder.start()
+        }
     }
-    public getLiving() {
-        return this.isLiving
+    public async stopRecorder() {
+        await this.recorder.stop()
+    }
+    public async startRecorder() {
+        if (this.isStreaming) {
+            await this.recorder.start()
+        }
+    }
+    public getStreaming() {
+        return this.isStreaming
     }
     public getRecording() {
         return this.recorder.getRecordingState()
@@ -79,6 +90,9 @@ class Room {
     }
     public getAutoRecord() {
         return this.room.autoRecord
+    }
+    public setAutoRecord(bool: boolean) {
+        this.room.autoRecord = bool
     }
 }
 
@@ -100,7 +114,7 @@ export async function deRoomRecorder(displayRoomId: number) {
 
 export function getLivingStatus(room: number): boolean {
     if (roomMap.has(room)) {
-        return roomMap.get(room)!.getLiving()
+        return roomMap.get(room)!.getStreaming()
     }
     return false
 }
@@ -137,7 +151,7 @@ export function getAllRoom(): Array<{
     for (const roomId of roomMap.keys()) {
         const room = roomMap.get(roomId) as Room
         const isRecording = room.getRecording()
-        const isLiving = room.getLiving()
+        const isLiving = room.getStreaming()
         const streamer = room.getStreamerName()
         const autoRecord = room.getAutoRecord()
         result.push({

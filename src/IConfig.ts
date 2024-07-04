@@ -17,4 +17,5 @@ export interface RoomConfig {
 	name: string
 	realRoomId: number
 	displayRoomId: number
+	autoRecord: boolean
 }

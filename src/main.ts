@@ -10,6 +10,12 @@ const rooms: Deno.KvListIterator<RoomConfig> = await database.list({
 })
 for await (const item of rooms) {
     printLog(`初始化房间${item.value.displayRoomId}`)
+    if (item.value.autoRecord === undefined) {
+        item.value.autoRecord = true
+        const automic = database.atomic()
+        automic.set(['room', item.value.displayRoomId], item.value)
+        await automic.commit()
+    }
     initRoomRecorder(item.value).then()
 }
 

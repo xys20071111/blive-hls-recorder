@@ -68,19 +68,19 @@ export class Recorder extends EventTarget {
 
   // 获取直播流网址
   private async getStreamUrl(): Promise<string> {
-    const data = (await request('/xlive/web-room/v2/index/getRoomPlayInfo', 'GET', {
-      room_id: this.roomId,
-      no_playurl: 0,
-      mask: 1,
-      qn: 10000,
-      platform: 'web',
-      protocol: '1',
-      format: '2',
-      codec: '0',
-      panorama: '1'
-    })).data
     // 处理直播流信息
     try {
+      const data = (await request('/xlive/web-room/v2/index/getRoomPlayInfo', 'GET', {
+        room_id: this.roomId,
+        no_playurl: 0,
+        mask: 1,
+        qn: 10000,
+        platform: 'web',
+        protocol: '1',
+        format: '2',
+        codec: '0',
+        panorama: '1'
+      })).data
       if (data.live_status !== 1) {
         throw new Error(ERROR_NAME.LIVE_DIDN_START)
       }

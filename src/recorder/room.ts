@@ -31,8 +31,10 @@ class Room {
             printLog(`房间 ${config.displayRoomId} 开始录制`)
         })
         this.danmakuReceiver.addEventListener('LIVE', async () => {
-            await this.recorder.start()
             printLog(`房间 ${config.displayRoomId} 开始直播`)
+            if (this.room.autoRecord) {
+                await this.recorder.start()
+            }
             this.isLiving = true
         })
         this.danmakuReceiver.addEventListener('PREPARING', async () => {
@@ -52,7 +54,7 @@ class Room {
             }
         })
         isStreaming(this.room.realRoomId).then((isStreaming) => {
-            if (isStreaming) {
+            if (isStreaming && this.room.autoRecord) {
                 this.recorder.start()
             }
         })
@@ -75,6 +77,9 @@ class Room {
     public getStreamerName() {
         return this.room.name
     }
+    public getAutoRecord() {
+        return this.room.autoRecord
+    }
 }
 
 const roomMap = new Map<number, Room>()
@@ -83,6 +88,14 @@ export async function initRoomRecorder(config: RoomConfig) {
     await Deno.mkdir(`${AppConfig.output}${config.name}-${config.displayRoomId}`, { recursive: true })
     if (!roomMap.has(config.displayRoomId))
         roomMap.set(config.displayRoomId, new Room(config))
+}
+
+export async function deRoomRecorder(displayRoomId: number) {
+    if (roomMap.has(displayRoomId)) {
+        const room = roomMap.get(displayRoomId)
+        room?.destroyRoom()
+        await removeRoomFromMap(displayRoomId)
+    }
 }
 
 export function getLivingStatus(room: number): boolean {
@@ -112,23 +125,27 @@ export function getAllRoom(): Array<{
     streamer: string
     isRecording: boolean
     isLiving: boolean
+    autoRecord: boolean
 }> {
     const result: Array<{
         room: number
         streamer: string
         isRecording: boolean
         isLiving: boolean
+        autoRecord: boolean
     }> = []
     for (const roomId of roomMap.keys()) {
         const room = roomMap.get(roomId) as Room
         const isRecording = room.getRecording()
         const isLiving = room.getLiving()
         const streamer = room.getStreamerName()
+        const autoRecord = room.getAutoRecord()
         result.push({
             room: roomId,
             streamer,
             isLiving,
-            isRecording
+            isRecording,
+            autoRecord
         })
     }
     return result

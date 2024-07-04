@@ -8,6 +8,7 @@ import { filterInt, request, printLog } from '../../utils/mod.ts'
 export async function addRoom(ctx: Context) {
     const query = ctx.request.url.searchParams
     const roomIdString = query.get('roomId')
+    const autoRecord = query.get('auto') ? true : false
     if (!roomIdString) {
         ctx.response.body = {
             code: 1,
@@ -42,7 +43,8 @@ export async function addRoom(ctx: Context) {
         const config: RoomConfig = {
             name: info.uname,
             realRoomId: roomInfo.room_id,
-            displayRoomId
+            displayRoomId,
+            autoRecord
         }
         const existence = await database.get(['room', displayRoomId])
         if (!existence.value) {

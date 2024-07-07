@@ -1,7 +1,7 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
 
-import { downloadFile } from '../utils/mod.ts'
+import { downloadFile, printError } from '../utils/mod.ts'
 
 interface Task {
     url: string
@@ -21,7 +21,11 @@ function sleep(ms: number) {
 while (true) {
     const task = taskPool.shift()
     if (task) {
-        await downloadFile(task.url, task.path, task.headers)
+        try {
+            await downloadFile(task.url, task.path, task.headers)
+        } catch {
+            printError('download failed')
+        }
     }
     await sleep(100)
 }

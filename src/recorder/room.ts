@@ -162,5 +162,8 @@ export function getAllRoom(): Array<{
             autoRecord
         })
     }
+    result.sort((a, b) => {
+        return a.room - b.room
+    })
     return result
 }

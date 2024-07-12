@@ -113,8 +113,8 @@ export class Recorder extends EventTarget {
         const err: Error = e
         printWarning(`房间 ${this.roomId}`)
         printWarning(err.stack)
-        await sleep(30000)
       }
+      await sleep(30000)
     }
     // 创建新文件
     try {

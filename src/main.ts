@@ -6,23 +6,23 @@ import { printLog } from './utils/mod.ts'
 import { initRoomRecorder } from './recorder/room.ts'
 
 const rooms: Deno.KvListIterator<RoomConfig> = await database.list({
-    prefix: ['room']
+	prefix: ['room'],
 })
 for await (const item of rooms) {
-    printLog(`初始化房间${item.value.displayRoomId}`)
-    if (item.value.autoRecord === undefined) {
-        item.value.autoRecord = true
-        const automic = database.atomic()
-        automic.set(['room', item.value.displayRoomId], item.value)
-        await automic.commit()
-    }
-    initRoomRecorder(item.value).then()
+	printLog(`初始化房间${item.value.displayRoomId}`)
+	if (item.value.autoRecord === undefined) {
+		item.value.autoRecord = true
+		const automic = database.atomic()
+		automic.set(['room', item.value.displayRoomId], item.value)
+		await automic.commit()
+	}
+	initRoomRecorder(item.value).then()
 }
 
 app.addEventListener('listen', (event) => {
-    console.log(`Listening on port ${event.port}`)
+	console.log(`Listening on port ${event.port}`)
 })
 
 app.listen({
-    port: AppConfig.port
+	port: AppConfig.port,
 })

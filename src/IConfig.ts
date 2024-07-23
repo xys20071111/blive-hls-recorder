@@ -1,8 +1,8 @@
 export interface ProgramConfig {
 	output: string
 	port: number
-	credential: Credential,
-	workerCount: number,
+	credential: Credential
+	workerCount: number
 	downloadRetry: number
 }
 

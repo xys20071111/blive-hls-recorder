@@ -1,5 +1,5 @@
-/// <reference no-default-lib='true' />
-/// <reference lib='deno.worker' />
+/// <reference no-default-lib="true" />
+/// <reference lib="deno.worker" />
 
 import { downloadFile } from '../utils/mod.ts'
 

@@ -157,7 +157,7 @@ export class Recorder extends EventTarget {
           if (m3u8.clips && m3u8.clips[0]) {
             this.isFirstRequest = false
             await this.outputFileStream?.write(encoder.encode(`#EXT-X-MEDIA-SEQUENCE:${m3u8.clips[0].filename.replace('.m4s', '')}\n`))
-            await this.outputFileStream?.write(encoder.encode(`#EXT-X-MAP:URI='${this.clipDir}${m3u8.mapFile}'\n`))
+            await this.outputFileStream?.write(encoder.encode(`#EXT-X-MAP:URI="${this.clipDir}${m3u8.mapFile}"\n`))
             this.workerPool.dispatchJob({
               url: this.streamUrl.replace('index.m3u8', m3u8.mapFile),
               path: `${this.clipDir}${m3u8.mapFile}`,

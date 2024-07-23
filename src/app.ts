@@ -2,8 +2,8 @@ import { Application, Router } from 'oak'
 import { addRoom, delRoom } from './controllers/room/add_and_remove.ts'
 import { getRoomStatus } from './controllers/room/status.ts'
 import { restartRecorder, startRecorder, stopRecorder } from './controllers/room/recorder_controller.ts'
-import { getRoomList } from "./controllers/room/list_all.ts"
-import { setAutoRecord } from "./controllers/room/set_auto_record.ts"
+import { getRoomList } from './controllers/room/list_all.ts'
+import { setAutoRecord } from './controllers/room/set_auto_record.ts'
 
 const app = new Application()
 const router = new Router()

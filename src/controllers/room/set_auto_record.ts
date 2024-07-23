@@ -1,8 +1,8 @@
 import { database } from '../../db.ts'
 import { Context } from 'oak'
 import { filterInt, printLog } from '../../utils/mod.ts'
-import { RoomConfig } from "../../IConfig.ts"
-import { getRoom } from "../../recorder/room.ts"
+import { RoomConfig } from '../../IConfig.ts'
+import { getRoom } from '../../recorder/room.ts'
 
 export async function setAutoRecord(ctx: Context) {
     const query = ctx.request.url.searchParams

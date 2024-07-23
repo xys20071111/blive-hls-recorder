@@ -4,7 +4,7 @@
 #EXT-X-START:TIME-OFFSET=0
 #EXT-X-MEDIA-SEQUENCE:39156177
 #EXT-X-TARGETDURATION:1
-#EXT-X-MAP:URI="h1680092604.m4s"
+#EXT-X-MAP:URI='h1680092604.m4s'
 #EXTINF:1.00,422ce|b020c7c5
 39156177.m4s
 #EXTINF:1.00,25487|c317aef6
@@ -26,55 +26,55 @@
 */
 
 interface IClip {
-    info: string
-    filename: string
+  info: string;
+  filename: string;
 }
 
 interface IPlaylist {
-    mapFile: string
-    clips: Array<IClip>
+  mapFile: string;
+  clips: Array<IClip>;
 }
 
 export class InvalidM3u8Error extends Error {
-    constructor(message: string) {
-        super(message)
-        this.name = 'InvalidM3u8Error'
-    }
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidM3u8Error";
+  }
 }
 
 export class BliveM3u8Parser {
-    public static parse(m3u8String: string): IPlaylist {
-        try {
-            if ('#EXTM3U' !== m3u8String.slice(0, 7)) {
-                throw new InvalidM3u8Error('Invalid m3u8 playlist')
-            }
-            const lines = m3u8String.split('\n')
-            const mapFile: string = (() => {
-                for (const line of lines) {
-                    if (line.includes('EXT-X-MAP')) {
-                        return line.slice(16).replace('"', '')
-                    }
-                }
-                return ''
-            })()
-            const clips: Array<IClip> = []
-            for (let i = 0; i < lines.length; i += 1) {
-                if (lines[i].startsWith('#EXTINF')) {
-                    const clip: IClip = {
-                        info: lines[i],
-                        filename: lines[i + 1]
-                    }
-                    clips.push(clip)
-                }
-            }
-            return {
-                mapFile,
-                clips
-            }
-        } catch (e) {
-            console.log(e)
-            console.log(m3u8String)
-            throw new InvalidM3u8Error('Invalid m3u8 playlist')
+  public static parse(m3u8String: string): IPlaylist {
+    try {
+      if ("#EXTM3U" !== m3u8String.slice(0, 7)) {
+        throw new InvalidM3u8Error("Invalid m3u8 playlist");
+      }
+      const lines = m3u8String.split("\n");
+      const mapFile: string = (() => {
+        for (const line of lines) {
+          if (line.includes("EXT-X-MAP")) {
+            return line.slice(16).replace("'", "");
+          }
         }
+        return "";
+      })();
+      const clips: Array<IClip> = [];
+      for (let i = 0; i < lines.length; i += 1) {
+        if (lines[i].startsWith("#EXTINF")) {
+          const clip: IClip = {
+            info: lines[i],
+            filename: lines[i + 1],
+          };
+          clips.push(clip);
+        }
+      }
+      return {
+        mapFile,
+        clips,
+      };
+    } catch (e) {
+      console.log(e);
+      console.log(m3u8String);
+      throw new InvalidM3u8Error("Invalid m3u8 playlist");
     }
+  }
 }

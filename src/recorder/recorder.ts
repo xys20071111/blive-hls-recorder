@@ -71,10 +71,10 @@ export class Recorder extends EventTarget {
 			})
 		)['data']['by_room_ids'][this.roomId.toString()].title
 		const outputFile = `${this.outputPath}/${getTimeString()}-${title}.m3u8`
-		this.outputFileStream = await Deno.create(outputFile)
-		printLog(`房间${this.roomId} 创建新文件 ${outputFile}`)
 		this.clipDir = outputFile.replace('.m3u8', '/')
 		await Deno.mkdir(this.clipDir, { recursive: true })
+		this.outputFileStream = await Deno.create(outputFile)
+		printLog(`房间${this.roomId} 创建新文件 ${outputFile}`)
 	}
 
 	// 获取直播流网址
@@ -82,21 +82,17 @@ export class Recorder extends EventTarget {
 		// 处理直播流信息
 		try {
 			const data = (
-				await request(
-					'/xlive/web-room/v2/index/getRoomPlayInfo',
-					'GET',
-					{
-						room_id: this.roomId,
-						no_playurl: 0,
-						mask: 1,
-						qn: 10000,
-						platform: 'web',
-						protocol: '1',
-						format: '2',
-						codec: '0',
-						panorama: '1',
-					},
-				)
+				await request('/xlive/web-room/v2/index/getRoomPlayInfo', 'GET', {
+					room_id: this.roomId,
+					no_playurl: 0,
+					mask: 1,
+					qn: 10000,
+					platform: 'web',
+					protocol: '1',
+					format: '2',
+					codec: '0',
+					panorama: '1',
+				})
 			).data
 			if (data.live_status !== 1) {
 				throw new Error(ERROR_NAME.LIVE_DIDN_START)
@@ -105,11 +101,9 @@ export class Recorder extends EventTarget {
 				throw new Error(ERROR_NAME.FAILED_TO_GET_STREAM_URL)
 			}
 			const host =
-				data.playurl_info.playurl.stream[0].format[0].codec[0]
-					.url_info[0].host
+				data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].host
 			const extra =
-				data.playurl_info.playurl.stream[0].format[0].codec[0]
-					.url_info[0].extra
+				data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].extra
 			const path =
 				data.playurl_info.playurl.stream[0].format[0].codec[0].base_url
 			if (host && extra && path) {
@@ -153,9 +147,7 @@ export class Recorder extends EventTarget {
 		// 开始下载流
 		this.recordInterval = setInterval(async () => {
 			if (!this.streamUrl) {
-				this.dispatchEvent(
-					new Event(RECORD_EVENT_CODE.CHECK_LIVE_STATE),
-				)
+				this.dispatchEvent(new Event(RECORD_EVENT_CODE.CHECK_LIVE_STATE))
 				return
 			}
 			try {
@@ -197,10 +189,7 @@ export class Recorder extends EventTarget {
 							),
 						)
 						this.workerPool.dispatchJob({
-							url: this.streamUrl.replace(
-								'index.m3u8',
-								m3u8.mapFile,
-							),
+							url: this.streamUrl.replace('index.m3u8', m3u8.mapFile),
 							path: `${this.clipDir}${m3u8.mapFile}`,
 							headers: FETCH_STREAM_HEADER,
 						})
@@ -211,21 +200,13 @@ export class Recorder extends EventTarget {
 				}
 				// 下载片段
 				for (const item of m3u8.clips) {
-					if (
-						item.filename &&
-						!this.clipList.includes(item.filename)
-					) {
+					if (item.filename && !this.clipList.includes(item.filename)) {
 						this.clipList.push(item.filename)
 						await this.outputFileStream!.write(
-							encoder.encode(
-								`${item.info}\n${this.clipDir}${item.filename}\n`,
-							),
+							encoder.encode(`${item.info}\n${this.clipDir}${item.filename}\n`),
 						)
 						this.workerPool.dispatchJob({
-							url: this.streamUrl.replace(
-								'index.m3u8',
-								item.filename,
-							),
+							url: this.streamUrl.replace('index.m3u8', item.filename),
 							path: `${this.clipDir}${item.filename}`,
 							headers: FETCH_STREAM_HEADER,
 						})
@@ -249,9 +230,7 @@ export class Recorder extends EventTarget {
 						}
 					}
 				}
-				this.dispatchEvent(
-					new Event(RECORD_EVENT_CODE.CHECK_LIVE_STATE),
-				)
+				this.dispatchEvent(new Event(RECORD_EVENT_CODE.CHECK_LIVE_STATE))
 			}
 		}, 3500)
 	}

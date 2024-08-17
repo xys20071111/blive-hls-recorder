@@ -4,6 +4,7 @@ export interface ProgramConfig {
 	credential: Credential
 	workerCount: number
 	downloadRetry: number
+	corsOrigin?: string
 }
 
 export interface Credential {

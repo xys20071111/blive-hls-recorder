@@ -15,6 +15,11 @@ export class WorkerPool {
 					type: 'module',
 				},
 			)
+			worker.addEventListener('error', (event) => {
+				console.log(
+					`${event.filename}:${event.lineno}\n${event.message}`,
+				)
+			})
 			this.workerPool.push(worker)
 		}
 	}

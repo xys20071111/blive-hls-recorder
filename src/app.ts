@@ -8,6 +8,7 @@ import {
 } from './controllers/room/recorder_controller.ts'
 import { getRoomList } from './controllers/room/list_all.ts'
 import { setAutoRecord } from './controllers/room/set_auto_record.ts'
+import { AppConfig } from './config.ts'
 
 const app = new Application()
 const router = new Router()
@@ -21,6 +22,15 @@ router.get('/api/room/startRecorder', startRecorder)
 router.get('/api/room/list', getRoomList)
 router.get('/api/room/setAutoRecord', setAutoRecord)
 
+if (AppConfig.corsOrigin) {
+	app.use((ctx, next) => {
+		ctx.response.headers.set(
+			'Access-Control-Allow-Origin',
+			AppConfig.corsOrigin!,
+		)
+		return next()
+	})
+}
 app.use(router.allowedMethods())
 app.use(router.routes())
 

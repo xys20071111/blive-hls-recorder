@@ -30,3 +30,29 @@ export async function downloadFile(
 		}
 	}
 }
+
+export async function downloadFileWithoutRetry(
+	urlString: string,
+	dest: string,
+	headers: Record<string, string>,
+) {
+	if (urlString.length === 0) {
+		return
+	}
+	const destStream = await Deno.create(dest)
+	const url = new URL(urlString)
+	const req = await fetch(url, { headers })
+	if (req.status !== 200) {
+		throw new Error(`${urlString} 下载失败, 错误码 ${req.status}`)
+	}
+	if (req.body) {
+		const reader = req.body.getReader()
+		while (true) {
+			const data = await reader.read()
+			destStream.write(data.value!)
+			if (data.done) {
+				break
+			}
+		}
+	}
+}

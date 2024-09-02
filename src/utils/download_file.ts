@@ -49,7 +49,11 @@ export async function downloadFileWithoutRetry(
 		const reader = req.body.getReader()
 		while (true) {
 			const data = await reader.read()
-			destStream.write(data.value!)
+			try {
+				destStream.write(data.value!)
+			} catch {
+				// Do nothing here.
+			}
 			if (data.done) {
 				break
 			}

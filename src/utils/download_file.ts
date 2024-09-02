@@ -55,6 +55,7 @@ export async function downloadFileWithoutRetry(
 				// Do nothing here.
 			}
 			if (data.done) {
+				destStream.close()
 				break
 			}
 		}

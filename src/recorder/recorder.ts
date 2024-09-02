@@ -262,15 +262,14 @@ export class Recorder extends EventTarget {
 				}
 			}, 3500)
 		} else {
-			while (await isStreaming(this.roomId)) {
-				await this.createFileStream('flv')
-				try {
-					await downloadFileWithoutRetry(this.streamUrl!, this.outputFilePath!, FETCH_STREAM_HEADER)
-				} catch (e) {
-					printWarning(`房间 ${this.roomId} flv下载发生错误`)
-					printWarning(this.outputFilePath)
-					printWarning(e)
-				}
+			await this.createFileStream('flv')
+			try {
+				await downloadFileWithoutRetry(this.streamUrl!, this.outputFilePath!, FETCH_STREAM_HEADER)
+			} catch (e) {
+				printWarning(`房间 ${this.roomId} flv下载发生错误`)
+				printWarning(this.outputFilePath)
+				printWarning(e)
+				this.dispatchEvent(new Event(RECORD_EVENT_CODE.CHECK_LIVE_STATE))
 			}
 		}
 	}

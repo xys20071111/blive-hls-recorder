@@ -269,6 +269,7 @@ export class Recorder extends EventTarget {
 				printWarning(`房间 ${this.roomId} flv下载发生错误`)
 				printWarning(this.outputFilePath)
 				printWarning(e)
+				this.stop()
 				this.dispatchEvent(new Event(RECORD_EVENT_CODE.CHECK_LIVE_STATE))
 			}
 		}

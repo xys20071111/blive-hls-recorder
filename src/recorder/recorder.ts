@@ -6,7 +6,6 @@ import {
 	printWarning,
 	printLog,
 	isStreaming,
-	InvalidM3u8Error,
 } from '../utils/mod.ts'
 import { AppConfig } from '../config.ts'
 import { encoder } from '../Text.ts'
@@ -44,7 +43,6 @@ export class Recorder extends EventTarget {
 	private isRecording = false
 	private workerPool: WorkerPool = new WorkerPool(AppConfig.workerCount)
 	private outputFilePath?: string
-
 
 	constructor(roomId: number, outputPath: string) {
 		super()
@@ -104,9 +102,11 @@ export class Recorder extends EventTarget {
 			}
 			if (data.playurl_info && data.playurl_info.playurl) {
 				const host =
-					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].host
+					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0]
+						.host
 				const extra =
-					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].extra
+					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0]
+						.extra
 				const path =
 					data.playurl_info.playurl.stream[0].format[0].codec[0].base_url
 				if (host && extra && path) {
@@ -127,9 +127,11 @@ export class Recorder extends EventTarget {
 					})
 				).data
 				const host =
-					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].host
+					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0]
+						.host
 				const extra =
-					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0].extra
+					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0]
+						.extra
 				const path =
 					data.playurl_info.playurl.stream[0].format[0].codec[0].base_url
 				if (host && extra && path) {
@@ -231,7 +233,9 @@ export class Recorder extends EventTarget {
 						if (item.filename && !this.clipList.includes(item.filename)) {
 							this.clipList.push(item.filename)
 							await this.outputFileStream!.write(
-								encoder.encode(`${item.info}\n${this.clipDir}${item.filename}\n`),
+								encoder.encode(
+									`${item.info}\n${this.clipDir}${item.filename}\n`,
+								),
 							)
 							this.workerPool.dispatchJob({
 								url: this.streamUrl.replace('index.m3u8', item.filename),
@@ -244,20 +248,7 @@ export class Recorder extends EventTarget {
 					const error = err as Error
 					printWarning(`房间${this.roomId} ${err}`)
 					printWarning(error.stack)
-					if (err instanceof InvalidM3u8Error) {
-						// 重新获取直播流
-						while (await isStreaming(this.roomId)) {
-							try {
-								this.streamUrl = await this.getStreamUrl()
-								break
-							} catch (e) {
-								const err: Error = e
-								printWarning(`房间 ${this.roomId}`)
-								printWarning(err.stack)
-								await sleep(2000)
-							}
-						}
-					}
+					await this.stop()
 					this.dispatchEvent(new Event(RECORD_EVENT_CODE.CHECK_LIVE_STATE))
 				}
 			}, 3500)
@@ -278,7 +269,7 @@ export class Recorder extends EventTarget {
 				})
 				const url = new URL(this.streamUrl!)
 				const req = await fetch(url, {
-					headers: FETCH_STREAM_HEADER
+					headers: FETCH_STREAM_HEADER,
 				})
 				if (req.status !== 200) {
 					throw new Error(`${this.streamUrl} 下载失败, 错误码 ${req.status}`)
@@ -304,7 +295,7 @@ export class Recorder extends EventTarget {
 				printWarning(`房间 ${this.roomId} flv下载发生错误`)
 				printWarning(this.outputFilePath)
 				printWarning(e)
-				this.stop()
+				await this.stop()
 				this.dispatchEvent(new Event(RECORD_EVENT_CODE.CHECK_LIVE_STATE))
 			}
 		}

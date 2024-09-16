@@ -7,12 +7,12 @@ import {
 	printLog,
 	isStreaming,
 	InvalidM3u8Error,
-	downloadFileWithoutRetry,
 } from '../utils/mod.ts'
 import { AppConfig } from '../config.ts'
 import { encoder } from '../Text.ts'
 import { WorkerPool } from './work_pool.ts'
 import { sleep } from '../utils/sleep.ts'
+import { FlvHeader, FlvPacket, FlvStreamParser } from 'npm:node-flv'
 
 export enum RECORD_EVENT_CODE {
 	RECORD_START = 'RECORD_START',
@@ -264,7 +264,42 @@ export class Recorder extends EventTarget {
 		} else {
 			await this.createFileStream('flv')
 			try {
-				await downloadFileWithoutRetry(this.streamUrl!, this.outputFilePath!, FETCH_STREAM_HEADER)
+				const flvStream = new FlvStreamParser()
+				flvStream.on('flv-header', (header: FlvHeader) => {
+					if (this.isFirstRequest) {
+						const buffer = header.build()
+						this.outputFileStream?.write(buffer)
+						this.isFirstRequest = false
+					}
+				})
+				flvStream.on('flv-packet', (packet: FlvPacket) => {
+					const buffer = packet.build()
+					this.outputFileStream?.write(buffer)
+				})
+				const url = new URL(this.streamUrl!)
+				const req = await fetch(url, {
+					headers: FETCH_STREAM_HEADER
+				})
+				if (req.status !== 200) {
+					throw new Error(`${this.streamUrl} 下载失败, 错误码 ${req.status}`)
+				}
+				if (req.body) {
+					const reader = req.body.getReader()
+					while (true) {
+						const data = await reader.read()
+						try {
+							flvStream.write(data.value!)
+						} catch {
+							// Do nothing here.
+						}
+						if (data.done) {
+							flvStream.destroy()
+							break
+						}
+					}
+					this.stop()
+					this.dispatchEvent(new Event(RECORD_EVENT_CODE.CHECK_LIVE_STATE))
+				}
 			} catch (e) {
 				printWarning(`房间 ${this.roomId} flv下载发生错误`)
 				printWarning(this.outputFilePath)

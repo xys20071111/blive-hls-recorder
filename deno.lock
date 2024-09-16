@@ -2,12 +2,45 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "npm:node-flv": "npm:node-flv@0.9.11",
       "npm:prettier": "npm:prettier@3.3.3"
     },
     "npm": {
+      "bitwise@0.2.0": {
+        "integrity": "sha512-4NLksF0lItiB79vf3yvm8oxtyffuwTaRO6UoePdDj4EO7C2nKdd2h/KAOepsHXLf+xliVwbADzk1spx/b48jSg==",
+        "dependencies": {}
+      },
+      "debug@2.6.9": {
+        "integrity": "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==",
+        "dependencies": {
+          "ms": "ms@2.0.0"
+        }
+      },
+      "lodash@4.17.21": {
+        "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==",
+        "dependencies": {}
+      },
+      "ms@2.0.0": {
+        "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==",
+        "dependencies": {}
+      },
+      "node-flv@0.9.11": {
+        "integrity": "sha512-zDH0Jnkk7X/zbwlXThK/FnUKZhgAh98jUyIwaU3nDs9OW5ZOJtR2fEdkHLaEVvj+YBwTQmVwO2BDIGoIxkubzA==",
+        "dependencies": {
+          "bitwise": "bitwise@0.2.0",
+          "lodash": "lodash@4.17.21",
+          "stream-parser": "stream-parser@0.3.1"
+        }
+      },
       "prettier@3.3.3": {
         "integrity": "sha512-i2tDNA0O5IrMO757lfrdQZCc2jPNDVntV0m/+4whiDfWaTKfMNgR7Qz0NAeGz/nRqF4m5/6CLzbP4/liHt12Ew==",
         "dependencies": {}
+      },
+      "stream-parser@0.3.1": {
+        "integrity": "sha512-bJ/HgKq41nlKvlhccD5kaCr/P+Hu0wPNKPJOH7en+YrJu/9EgqUF+88w5Jb6KNcjOFMhfX4B2asfeAtIGuHObQ==",
+        "dependencies": {
+          "debug": "debug@2.6.9"
+        }
       }
     }
   },

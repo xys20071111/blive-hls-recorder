@@ -107,6 +107,9 @@ class Room {
 	public setRecorderAllowFallback(val: boolean) {
 		this.recorder.setAllowFallback(val)
 	}
+	public getAllowFallback() {
+		return this.room.allowFallback
+	}
 }
 
 const roomMap = new Map<number, Room>()
@@ -156,6 +159,7 @@ export function getAllRoom(): Array<{
 	isRecording: boolean
 	isLiving: boolean
 	autoRecord: boolean
+	allowFallback: boolean
 }> {
 	const result: Array<{
 		room: number
@@ -163,6 +167,7 @@ export function getAllRoom(): Array<{
 		isRecording: boolean
 		isLiving: boolean
 		autoRecord: boolean
+		allowFallback: boolean
 	}> = []
 	for (const roomId of roomMap.keys()) {
 		const room = roomMap.get(roomId) as Room
@@ -170,12 +175,14 @@ export function getAllRoom(): Array<{
 		const isLiving = room.getStreaming()
 		const streamer = room.getStreamerName()
 		const autoRecord = room.getAutoRecord()
+		const allowFallback = room.getAllowFallback()
 		result.push({
 			room: roomId,
 			streamer,
 			isLiving,
 			isRecording,
 			autoRecord,
+			allowFallback
 		})
 	}
 	result.sort((a, b) => {

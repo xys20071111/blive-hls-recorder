@@ -8,6 +8,7 @@ import {
 } from './controllers/room/recorder_controller.ts'
 import { getRoomList } from './controllers/room/list_all.ts'
 import { setAutoRecord } from './controllers/room/set_auto_record.ts'
+import { setAllowFallback } from './controllers/room/set_allow_fallback.ts'
 import { AppConfig } from './config.ts'
 
 const app = new Application()
@@ -21,6 +22,7 @@ router.get('/api/room/stopRecorder', stopRecorder)
 router.get('/api/room/startRecorder', startRecorder)
 router.get('/api/room/list', getRoomList)
 router.get('/api/room/setAutoRecord', setAutoRecord)
+router.get('/api/room/setAllowFallback', setAllowFallback)
 
 if (AppConfig.corsOrigin) {
 	app.use((ctx, next) => {

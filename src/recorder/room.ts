@@ -22,6 +22,7 @@ class Room {
 		this.recorder = new Recorder(
 			config.realRoomId,
 			`${AppConfig.output}${config.name}-${config.displayRoomId}`,
+			config.allowFallback
 		)
 		this.recorder.addEventListener(
 			RECORD_EVENT_CODE.CHECK_LIVE_STATE,
@@ -102,6 +103,9 @@ class Room {
 	}
 	public setAutoRecord(bool: boolean) {
 		this.room.autoRecord = bool
+	}
+	public setRecorderAllowFallback(val: boolean) {
+		this.recorder.setAllowFallback(val)
 	}
 }
 

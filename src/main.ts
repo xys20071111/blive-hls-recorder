@@ -16,6 +16,12 @@ for await (const item of rooms) {
 		automic.set(['room', item.value.displayRoomId], item.value)
 		await automic.commit()
 	}
+	if (item.value.allowFallback === undefined) {
+		item.value.allowFallback = false
+		const automic = database.atomic()
+		automic.set(['room', item.value.displayRoomId], item.value)
+		await automic.commit()
+	}
 	initRoomRecorder(item.value).then()
 }
 

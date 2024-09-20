@@ -43,14 +43,22 @@ export class Recorder extends EventTarget {
 	private isRecording = false
 	private workerPool: WorkerPool = new WorkerPool(AppConfig.workerCount)
 	private outputFilePath?: string
+	private allowFallback: boolean
 
-	constructor(roomId: number, outputPath: string) {
+	constructor(roomId: number, outputPath: string, allowFallback: boolean) {
 		super()
 		this.roomId = roomId
 		this.outputPath = outputPath
+		this.allowFallback = allowFallback
 	}
 	public getRecordingState(): boolean {
 		return this.isRecording
+	}
+	public getAllowFallback() {
+		return this.addEventListener
+	}
+	public setAllowFallback(val: boolean) {
+		this.allowFallback = val
 	}
 	public async stop() {
 		clearInterval(this.recordInterval)
@@ -112,7 +120,7 @@ export class Recorder extends EventTarget {
 				if (host && extra && path) {
 					return `${host}${path}${extra}`
 				}
-			} else {
+			} else if (this.allowFallback) {
 				const data = (
 					await request('/xlive/web-room/v2/index/getRoomPlayInfo', 'GET', {
 						room_id: this.roomId,

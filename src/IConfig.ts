@@ -19,4 +19,5 @@ export interface RoomConfig {
 	realRoomId: number
 	displayRoomId: number
 	autoRecord: boolean
+	allowFallback: boolean
 }

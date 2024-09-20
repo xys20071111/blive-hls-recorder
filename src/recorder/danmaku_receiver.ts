@@ -24,6 +24,7 @@ export class DanmakuReceiver extends EventTarget {
 	private roomId: number
 	private ws: WebSocket | null = null
 	private credential: Credential
+	private resetTimer: number = -1
 	constructor(roomId: number, credential: Credential) {
 		super()
 		this.roomId = roomId
@@ -58,6 +59,11 @@ export class DanmakuReceiver extends EventTarget {
 				`wss://${roomConfig.data.host_list[0].host}:${roomConfig.data.host_list[0].wss_port}/sub`,
 			)
 			this.ws.onopen = () => {
+				// 如果10秒内没有通过验证
+				this.resetTimer = setInterval(() => {
+					//就关闭连接
+					this.close()
+				}, 10000)
 				const payload = JSON.stringify({
 					roomid: this.roomId,
 					protover: 3,
@@ -114,6 +120,7 @@ export class DanmakuReceiver extends EventTarget {
 				// 心跳包，不做处理
 				break
 			case DANMAKU_TYPE.AUTH_REPLY:
+				clearInterval(this.resetTimer)
 				printLog(`房间${this.roomId} 弹幕接收器 通过认证`)
 				// 认证通过，每30秒发一次心跳包
 				setInterval(() => {
@@ -168,7 +175,7 @@ export class DanmakuReceiver extends EventTarget {
 	}
 	close() {
 		if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-			this.ws.onclose = () => {}
+			this.ws.onclose = () => { }
 			this.ws.close()
 			this.ws = null
 			this.dispatchEvent(

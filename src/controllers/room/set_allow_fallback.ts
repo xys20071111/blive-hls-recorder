@@ -29,7 +29,7 @@ export async function setAllowFallback(ctx: Context) {
 	])
 	if (existence.value) {
 		printLog(`修改 ${displayRoomId} 的flv回退为 ${allowFallback}`)
-		existence.value.autoRecord = allowFallback
+		existence.value.allowFallback = allowFallback
 		await database.set(['room', displayRoomId], existence.value)
 		const room = getRoom(displayRoomId)
 		room?.setRecorderAllowFallback(allowFallback)

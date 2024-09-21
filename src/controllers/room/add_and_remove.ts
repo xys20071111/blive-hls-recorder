@@ -13,6 +13,7 @@ export async function addRoom(ctx: Context) {
 	const query = ctx.request.url.searchParams
 	const roomIdString = query.get('roomId')
 	const autoRecord = query.get('auto') ? true : false
+	const allowFallback = query.get('fallback') ? true : false
 	if (!roomIdString) {
 		ctx.response.body = {
 			code: 1,
@@ -53,6 +54,7 @@ export async function addRoom(ctx: Context) {
 			realRoomId: roomInfo.room_id,
 			displayRoomId,
 			autoRecord,
+			allowFallback
 		}
 		const existence = await database.get(['room', displayRoomId])
 		if (!existence.value) {

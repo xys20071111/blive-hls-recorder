@@ -106,6 +106,7 @@ class Room {
 	}
 	public setRecorderAllowFallback(val: boolean) {
 		this.recorder.setAllowFallback(val)
+		this.room.allowFallback = val
 	}
 	public getAllowFallback() {
 		return this.room.allowFallback

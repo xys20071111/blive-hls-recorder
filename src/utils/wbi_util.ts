@@ -1,4 +1,4 @@
-import { Credential } from "../config.ts"
+import { Credential } from "../IConfig.ts"
 import { crypto } from '@std/crypto'
 
 const MIXIN_KEY_ENC_TAB: Array<number> = [

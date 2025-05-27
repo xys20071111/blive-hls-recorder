@@ -1,5 +1,6 @@
 import { AppConfig } from '../config.ts'
 import { printError } from './mod.ts'
+import { sign } from "./wbi_util.ts"
 
 const GET_HEADER = {
 	Cookie: `buvid3=${AppConfig.credential.buvid3}; SESSDATA=${AppConfig.credential.sessdata}; bili_jct=${AppConfig.credential.csrf};`,
@@ -15,18 +16,17 @@ const POST_HEADER = {
 }
 
 // deno-lint-ignore no-explicit-any
-function pathBuilder(path: string, data: any): string {
+async function pathBuilder(path: string, data: any): Promise<string> {
 	let result = `${path}?`
-	for (const item in data) {
-		result += `${item}=${data[item]}&`
-	}
+	result += await sign(AppConfig.credential, data)
 	return result
 }
 
 async function request(path: string, method: 'GET' | 'POST', data: object) {
 	try {
+		const query = await pathBuilder(path, data)
 		const res = await fetch(
-			`https://api.live.bilibili.com${method === 'POST' ? path : pathBuilder(path, data)}`,
+			`https://api.live.bilibili.com${query}`,
 			{
 				method,
 				headers: method === 'POST' ? POST_HEADER : GET_HEADER,

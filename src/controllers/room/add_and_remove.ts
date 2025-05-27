@@ -30,8 +30,8 @@ export async function addRoom(ctx: Context) {
 		return
 	}
 	try {
-		const data = await request('/room/v1/Room/room_init', 'GET', {
-			id: displayRoomId,
+		const data = await request('/xlive/web-room/v2/index/getRoomPlayInfo', 'GET', {
+			room_id: displayRoomId, no_playurl: 1
 		})
 		if (data.code !== 0) {
 			ctx.response.body = {

@@ -1,6 +1,7 @@
 import * as brotli from 'brotli'
 import { Credential } from '../IConfig.ts'
 import { printLog } from '../utils/mod.ts'
+import { sign } from "../utils/wbi_util.ts"
 
 enum DANMAKU_PROTOCOL {
 	JSON = 0,
@@ -32,10 +33,14 @@ export class DanmakuReceiver extends EventTarget {
 	}
 	public async connect() {
 		try {
+			const signed = sign(this.credential, {
+				id: this.roomId,
+				type: 0
+			})
 			//获取房间信息
 			const roomConfig = await (
 				await fetch(
-					`https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo?id=${this.roomId}&type=0`,
+					`https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo?id=${signed}`,
 					{
 						headers: {
 							Cookie: `buvid3=${this.credential.buvid3};SESSDATA=${this.credential.sessdata};bili_jct=${this.credential.csrf};`,

@@ -25,7 +25,8 @@ for await (const item of rooms) {
 	initRoomRecorder(item.value).then()
 }
 
-app.addEventListener('listen', (event) => {
+// deno-lint-ignore no-explicit-any
+app.addEventListener('listen', (event: any) => {
 	console.log(`Listening on port ${event.port}`)
 })
 

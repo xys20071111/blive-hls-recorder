@@ -5,7 +5,8 @@ export interface ProgramConfig {
 	workerCount: number
 	downloadRetry: number
 	corsOrigin?: string
-	ua: string
+	ua: string,
+	delay: number
 }
 
 export interface Credential {

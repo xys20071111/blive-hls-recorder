@@ -22,7 +22,7 @@ for await (const item of rooms) {
 		automic.set(['room', item.value.displayRoomId], item.value)
 		await automic.commit()
 	}
-	initRoomRecorder(item.value).then()
+	await initRoomRecorder(item.value)
 }
 
 // deno-lint-ignore no-explicit-any

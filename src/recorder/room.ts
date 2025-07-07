@@ -74,7 +74,7 @@ class Room {
 					this.recorder.start()
 				}
 			})
-		}, AppConfig.delay * 1000)
+		}, (AppConfig.delay ?? 15) * 1000)
 		// this.danmakuReceiver.connect()
 	}
 	public async restartRecorder() {

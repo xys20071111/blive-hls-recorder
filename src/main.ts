@@ -5,7 +5,7 @@ import { database } from './db.ts'
 import { printLog } from './utils/mod.ts'
 import { initRoomRecorder } from './recorder/room.ts'
 
-const rooms: Deno.KvListIterator<RoomConfig> = await database.list({
+const rooms: Deno.KvListIterator<RoomConfig> = database.list({
 	prefix: ['room'],
 })
 for await (const item of rooms) {

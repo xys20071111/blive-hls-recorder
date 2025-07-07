@@ -1,3 +1,4 @@
+import { AppConfig } from "../config.ts"
 import { Credential } from "../IConfig.ts"
 import { crypto } from '@std/crypto'
 
@@ -13,8 +14,7 @@ async function getRawKey(credential: Credential): Promise<string | null> {
     const navReq = await fetch('https://api.bilibili.com/x/web-interface/nav', {
         headers: {
             Cookie: `buvid3=${credential.buvid3};SESSDATA=${credential.sessdata};bili_jct=${credential.csrf};`,
-            "User-Agent":
-                "Mozilla/5.0 (X11 Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36",
+            "User-Agent": AppConfig.ua,
             Host: "api.live.bilibili.com",
             Origin: "https://live.bilibili.com",
             Referer: `https://live.bilibili.com/101?broadcast_type=0`,

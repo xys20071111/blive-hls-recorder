@@ -23,7 +23,7 @@ export async function downloadFile(
 			}
 			break
 		} catch (e) {
-			const err: Error = e
+			const err: Error = e as Error
 			printError(err.message)
 			printError(`重试次数 ${i}`)
 			printError(`${err.stack}`)

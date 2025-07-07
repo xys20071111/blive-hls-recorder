@@ -20,8 +20,7 @@ export enum RECORD_EVENT_CODE {
 }
 
 const FETCH_STREAM_HEADER = {
-	'User-Agent':
-		'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36',
+	'User-Agent': AppConfig.ua,
 	Referer: 'https://live.bilibili.com',
 	Origin: 'https://live.bilibili.com',
 }
@@ -163,7 +162,7 @@ export class Recorder extends EventTarget {
 				this.streamUrl = await this.getStreamUrl()
 				break
 			} catch (e) {
-				const err: Error = e
+				const err: Error = e as Error
 				printWarning(`房间 ${this.roomId}`)
 				printWarning(err.stack)
 			}

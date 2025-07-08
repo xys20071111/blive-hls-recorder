@@ -3,8 +3,7 @@ import { printError } from './mod.ts'
 import { sign } from "./wbi_util.ts"
 
 const GET_HEADER = {
-	Cookie: `buvid3=${AppConfig.credential.buvid3}; SESSDATA=${AppConfig.credential.sessdata}; bili_jct=${AppConfig.credential.csrf};`,
-	'user-agent': AppConfig.ua,
+	Cookie: AppConfig.credential.cookie,
 	host: 'api.live.bilibili.com',
 	Referer: 'https://live.bilibili.com',
 }
@@ -39,7 +38,6 @@ async function request(path: string, method: 'GET' | 'POST', data: object) {
 		}
 	} catch (e) {
 		printError(e)
-		return request(path, method, data)
 	}
 }
 export { request }

@@ -9,9 +9,7 @@ export interface ProgramConfig {
 }
 
 export interface Credential {
-	sessdata: string
-	csrf: string
-	buvid3: string
+	cookie: string
 	uid: number
 }
 

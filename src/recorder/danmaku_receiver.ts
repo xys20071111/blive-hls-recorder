@@ -45,7 +45,7 @@ export class DanmakuReceiver extends EventTarget {
 					`https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo?${signed}`,
 					{
 						headers: {
-							Cookie: `buvid3=${this.credential.buvid3};SESSDATA=${this.credential.sessdata};bili_jct=${this.credential.csrf};`,
+							Cookie: this.credential.cookie,
 							'User-Agent': AppConfig.ua,
 							Host: 'api.live.bilibili.com',
 							Origin: 'https://live.bilibili.com',
@@ -76,7 +76,10 @@ export class DanmakuReceiver extends EventTarget {
 					protover: 3,
 					platform: 'web',
 					uid: this.credential.uid,
-					buvid: this.credential.buvid3,
+					buvid: this.credential.cookie.replace(
+						/(?:(?:^|.*;\s*)buvid3\s*\=\s*([^;]*).*$)|^.*$/,
+						"$1",
+					),
 					key: roomConfig.data.token,
 					type: 2,
 				})

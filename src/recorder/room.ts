@@ -53,6 +53,7 @@ class Room {
 			this.isStreaming = false
 		})
 		this.danmakuReceiver.addEventListener('closed', async () => {
+			await sleep(1000)
 			await this.danmakuReceiver.connect()
 			const streaming = await isStreaming(this.room.realRoomId)
 			if (streaming) {

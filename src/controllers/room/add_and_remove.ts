@@ -1,13 +1,16 @@
-import { database } from '../../db.ts'
+import { database } from '@/db.ts'
 import { Context } from 'oak'
-import { RoomConfig } from '../../IConfig.ts'
-import { BroadcasterInfoRoot, RoomInfo } from '../../IMsg.ts'
+import { RoomConfig } from '@/IConfig.ts'
+import { BroadcasterInfoRoot, RoomInfo } from '@/IMsg.ts'
 import {
 	initRoomRecorder,
 	getRoom,
 	removeRoomFromMap,
-} from '../../recorder/room.ts'
-import { filterInt, request, printLog } from '../../utils/mod.ts'
+} from '@/recorder/room.ts'
+import { request } from "@/utils/requester.ts"
+import { filterInt } from "@/utils/filter_int.ts"
+import { printLog } from "@/utils/print_log.ts"
+
 
 export async function addRoom(ctx: Context) {
 	const query = ctx.request.url.searchParams

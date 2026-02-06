@@ -1,6 +1,9 @@
+// Keep for backup
+
 import { AppConfig } from "../config.ts"
 import { Credential } from "../IConfig.ts"
 import { crypto } from '@std/crypto'
+import { getCookieValue } from "./getCookie.ts"
 
 const MIXIN_KEY_ENC_TAB: Array<number> = [
     46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35, 27, 43, 5, 49,
@@ -13,7 +16,7 @@ const encoder = new TextEncoder()
 async function getRawKey(credential: Credential): Promise<string | null> {
     const navReq = await fetch('https://api.bilibili.com/x/web-interface/nav', {
         headers: {
-            Cookie: `buvid3=${credential.buvid3};SESSDATA=${credential.sessdata};bili_jct=${credential.csrf};`,
+            Cookie: `buvid3=${getCookieValue(credential.cookie, 'buvid3')};SESSDATA=${getCookieValue(credential.cookie, 'SESSDATA')};bili_jct=${getCookieValue(credential.cookie, 'bili_jct')};`,
             "User-Agent": AppConfig.ua,
             Host: "api.live.bilibili.com",
             Origin: "https://live.bilibili.com",

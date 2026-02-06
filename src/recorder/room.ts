@@ -1,24 +1,27 @@
-import { RoomConfig } from '../IConfig.ts'
-import { AppConfig } from '../config.ts'
+import { RoomConfig } from '@/IConfig.ts'
+import { AppConfig } from '@/config.ts'
 import { Recorder } from './recorder.ts'
 import { DanmakuReceiver } from './danmaku_receiver.ts'
-import { printLog, isStreaming } from '../utils/mod.ts'
-import { sleep } from '../utils/sleep.ts'
+import { sleep } from '@/utils/sleep.ts'
 import { RECORD_EVENT_CODE } from './recorder.ts'
+import { isStreaming } from "@/utils/is_streaming.ts"
+import { printLog } from "@/utils/print_log.ts"
 
 class Room {
 	private recorder: Recorder
 	private isRecording = false
 	private isStreaming = false
-	private danmakuReceiver: DanmakuReceiver
+	private danmakuReceiver: DanmakuReceiver | null = null
 	private room: RoomConfig
 
 	constructor(config: RoomConfig) {
 		this.room = config
-		this.danmakuReceiver = new DanmakuReceiver(
-			config.realRoomId,
-			AppConfig.credential,
-		)
+		if (config.autoRecord) {
+			this.danmakuReceiver = new DanmakuReceiver(
+				config.realRoomId,
+				AppConfig.credential,
+			)
+		}
 		this.recorder = new Recorder(
 			config.realRoomId,
 			`${AppConfig.output}${config.name}-${config.displayRoomId}`,
@@ -40,21 +43,21 @@ class Room {
 			this.isRecording = true
 			printLog(`房间 ${config.displayRoomId} 开始录制`)
 		})
-		this.danmakuReceiver.addEventListener('LIVE', async () => {
+		this.danmakuReceiver?.addEventListener('LIVE', async () => {
 			printLog(`房间 ${config.displayRoomId} 开始直播`)
 			if (this.room.autoRecord) {
 				await this.recorder.start()
 			}
 			this.isStreaming = true
 		})
-		this.danmakuReceiver.addEventListener('PREPARING', async () => {
+		this.danmakuReceiver?.addEventListener('PREPARING', async () => {
 			await this.recorder.stop()
 			printLog(`房间 ${config.displayRoomId} 直播结束`)
 			this.isStreaming = false
 		})
-		this.danmakuReceiver.addEventListener('closed', async () => {
+		this.danmakuReceiver?.addEventListener('closed', async () => {
 			await sleep(10000)
-			await this.danmakuReceiver.connect()
+			await this.danmakuReceiver?.connect()
 			const streaming = await isStreaming(this.room.realRoomId)
 			if (streaming) {
 				await this.recorder.start()
@@ -70,7 +73,7 @@ class Room {
 				this.recorder.start()
 			}
 		})
-		this.danmakuReceiver.connect()
+		this.danmakuReceiver?.connect()
 	}
 	public async restartRecorder() {
 		if (this.isStreaming) {
@@ -94,7 +97,7 @@ class Room {
 	}
 	public async destroyRoom() {
 		await this.recorder.stop()
-		this.danmakuReceiver.close()
+		this.danmakuReceiver?.close()
 	}
 	public getStreamerName() {
 		return this.room.name

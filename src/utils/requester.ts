@@ -1,5 +1,5 @@
 import { AppConfig } from '../config.ts'
-import { printError } from './mod.ts'
+import { printError } from './print_log.ts'
 import { sign } from "./wbi_util.ts"
 
 const GET_HEADER = {

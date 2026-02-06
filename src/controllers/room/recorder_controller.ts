@@ -1,6 +1,6 @@
 import { Context } from 'oak'
 import { getRoom } from '../../recorder/room.ts'
-import { filterInt } from '../../utils/mod.ts'
+import { filterInt } from '@/utils/filter_int.ts'
 
 export async function restartRecorder(ctx: Context) {
 	const query = ctx.request.url.searchParams

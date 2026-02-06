@@ -1,5 +1,5 @@
 import { Context } from 'oak'
-import { getAllRoom } from '../../recorder/room.ts'
+import { getAllRoom } from '@/recorder/room.ts'
 
 export function getRoomList(ctx: Context) {
 	ctx.response.body = {

@@ -1,17 +1,14 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import {
-	request,
-	getTimeString,
-	BliveM3u8Parser,
-	printWarning,
-	printLog,
-	isStreaming,
-} from '../utils/mod.ts'
+import { request } from '@/utils/requester.ts'
 import { AppConfig } from '../config.ts'
 import { encoder } from '../Text.ts'
 import { WorkerPool } from './work_pool.ts'
-import { sleep } from '../utils/sleep.ts'
+import { sleep } from '@/utils/sleep.ts'
 import { FlvHeader, FlvPacket, FlvStreamParser } from 'npm:node-flv'
+import { BliveM3u8Parser } from "@/utils/blive_m3u8_parser.ts"
+import { isStreaming } from "@/utils/is_streaming.ts"
+import { printLog, printWarning } from "@/utils/print_log.ts"
+import { getTimeString } from "@/utils/time.ts"
 
 export enum RECORD_EVENT_CODE {
 	RECORD_START = 'RECORD_START',

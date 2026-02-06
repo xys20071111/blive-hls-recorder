@@ -1,6 +1,6 @@
 import { Context } from 'oak'
 import { getLivingStatus, getRecordingStatus } from '../../recorder/room.ts'
-import { filterInt } from '../../utils/mod.ts'
+import { filterInt } from '@/utils/filter_int.ts'
 
 export function getRoomStatus(ctx: Context) {
 	const query = ctx.request.url.searchParams

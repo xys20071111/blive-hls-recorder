@@ -11,6 +11,7 @@ export interface ProgramConfig {
 export interface Credential {
 	cookie: string
 	uid: number
+	accessKey: string
 }
 
 export interface RoomConfig {

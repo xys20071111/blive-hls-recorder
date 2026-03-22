@@ -16,7 +16,7 @@ export async function downloadFile(
 			const url = new URL(urlString)
 			const req = await fetch(url, { headers })
 			if (req.status !== 200) {
-				throw new Error(`${urlString} 下载失败, 错误码 ${req.status}`)
+				throw new Error(`${urlString} 下载失败，错误码 ${req.status}`)
 			}
 			if (req.body) {
 				req.body.pipeTo(destStream.writable)

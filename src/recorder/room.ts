@@ -7,6 +7,15 @@ import { RECORD_EVENT_CODE } from './recorder.ts'
 import { isStreaming } from "@/utils/is_streaming.ts"
 import { printLog } from "@/utils/print_log.ts"
 
+export interface RoomStatus {
+	room: number
+	streamer: string
+	isRecording: boolean
+	isLiving: boolean
+	autoRecord: boolean
+	allowFallback: boolean
+}
+
 class Room {
 	private recorder: Recorder
 	private isRecording = false
@@ -16,12 +25,6 @@ class Room {
 
 	constructor(config: RoomConfig) {
 		this.room = config
-		if (config.autoRecord) {
-			this.danmakuReceiver = new DanmakuReceiver(
-				config.realRoomId,
-				AppConfig.credential,
-			)
-		}
 		this.recorder = new Recorder(
 			config.realRoomId,
 			`${AppConfig.output}${config.name}-${config.displayRoomId}`,
@@ -32,7 +35,7 @@ class Room {
 			async () => {
 				await sleep(1000)
 				const streaming = await isStreaming(this.room.realRoomId)
-				if (streaming) {
+				if (streaming && this.room.autoRecord) {
 					this.recorder.start()
 				} else {
 					this.recorder.stop()
@@ -43,37 +46,9 @@ class Room {
 			this.isRecording = true
 			printLog(`房间 ${config.displayRoomId} 开始录制`)
 		})
-		this.danmakuReceiver?.addEventListener('LIVE', async () => {
-			printLog(`房间 ${config.displayRoomId} 开始直播`)
-			if (this.room.autoRecord) {
-				await this.recorder.start()
-			}
-			this.isStreaming = true
-		})
-		this.danmakuReceiver?.addEventListener('PREPARING', async () => {
-			await this.recorder.stop()
-			printLog(`房间 ${config.displayRoomId} 直播结束`)
-			this.isStreaming = false
-		})
-		this.danmakuReceiver?.addEventListener('closed', async () => {
-			await sleep(10000)
-			await this.danmakuReceiver?.connect()
-			const streaming = await isStreaming(this.room.realRoomId)
-			if (streaming) {
-				await this.recorder.start()
-				this.isStreaming = true
-			} else {
-				await this.recorder.stop()
-				this.isStreaming = false
-			}
-		})
-		isStreaming(this.room.realRoomId).then((isStreaming) => {
-			this.isStreaming = isStreaming
-			if (isStreaming && this.room.autoRecord) {
-				this.recorder.start()
-			}
-		})
-		this.danmakuReceiver?.connect()
+		if (config.autoRecord) {
+			this.setAutoRecord(true)
+		}
 	}
 	public async restartRecorder() {
 		if (this.isStreaming) {
@@ -105,8 +80,46 @@ class Room {
 	public getAutoRecord() {
 		return this.room.autoRecord
 	}
-	public setAutoRecord(bool: boolean) {
+	public async setAutoRecord(bool: boolean) {
 		this.room.autoRecord = bool
+		if (bool && !this.danmakuReceiver) {
+			this.danmakuReceiver = new DanmakuReceiver(
+				this.room.realRoomId,
+				AppConfig.credential,
+			)
+			this.danmakuReceiver.addEventListener('LIVE', async () => {
+				printLog(`房间 ${this.room.displayRoomId} 开始直播`)
+				if (this.room.autoRecord) {
+					await this.recorder.start()
+				}
+				this.isStreaming = true
+			})
+			this.danmakuReceiver.addEventListener('PREPARING', async () => {
+				await this.recorder.stop()
+				printLog(`房间 ${this.room.displayRoomId} 直播结束`)
+				this.isStreaming = false
+			})
+			this.danmakuReceiver.addEventListener('closed', async () => {
+				await sleep(10000)
+				await this.danmakuReceiver?.connect()
+				const streaming = await isStreaming(this.room.realRoomId)
+				if (streaming) {
+					await this.recorder.start()
+					this.isStreaming = true
+				} else {
+					await this.recorder.stop()
+					this.isStreaming = false
+				}
+			})
+			const streaming = await isStreaming(this.room.realRoomId)
+			if (streaming && this.room.autoRecord) {
+				await this.recorder.start()
+			}
+			this.danmakuReceiver.connect()
+		} else if (!bool && this.danmakuReceiver) {
+			this.danmakuReceiver.close()
+			this.danmakuReceiver = null
+		}
 	}
 	public setRecorderAllowFallback(val: boolean) {
 		this.recorder.setAllowFallback(val)
@@ -158,22 +171,8 @@ export function getRoom(roomId: number): Room | undefined {
 	return roomMap.get(roomId)
 }
 
-export function getAllRoom(): Array<{
-	room: number
-	streamer: string
-	isRecording: boolean
-	isLiving: boolean
-	autoRecord: boolean
-	allowFallback: boolean
-}> {
-	const result: Array<{
-		room: number
-		streamer: string
-		isRecording: boolean
-		isLiving: boolean
-		autoRecord: boolean
-		allowFallback: boolean
-	}> = []
+export function getAllRoom(): RoomStatus[] {
+	const result: RoomStatus[] = []
 	for (const roomId of roomMap.keys()) {
 		const room = roomMap.get(roomId) as Room
 		const isRecording = room.getRecording()

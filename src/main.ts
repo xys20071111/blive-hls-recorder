@@ -10,19 +10,23 @@ const rooms: Deno.KvListIterator<RoomConfig> = database.list({
 })
 for await (const item of rooms) {
 	printLog(`初始化房间${item.value.displayRoomId}`)
+	let needsUpdate = false
 	if (item.value.autoRecord === undefined) {
 		item.value.autoRecord = true
-		const automic = database.atomic()
-		automic.set(['room', item.value.displayRoomId], item.value)
-		await automic.commit()
+		needsUpdate = true
 	}
 	if (item.value.allowFallback === undefined) {
 		item.value.allowFallback = false
-		const automic = database.atomic()
-		automic.set(['room', item.value.displayRoomId], item.value)
-		await automic.commit()
+		needsUpdate = true
 	}
-	initRoomRecorder(item.value).then()
+	if (needsUpdate) {
+		await database.set(['room', item.value.displayRoomId], item.value)
+	}
+	try {
+		await initRoomRecorder(item.value)
+	} catch (e) {
+		printLog(`初始化房间 ${item.value.displayRoomId} 失败：${e}`)
+	}
 }
 
 // deno-lint-ignore no-explicit-any

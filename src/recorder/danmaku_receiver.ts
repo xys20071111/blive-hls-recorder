@@ -27,6 +27,7 @@ export class DanmakuReceiver extends EventTarget {
   private ws: WebSocket | null = null;
   private credential: Credential
   private resetTimer: number = -1;
+  private heartbeatTimer: number = -1;
   constructor(roomId: number, credential: Credential) {
     super()
     this.roomId = roomId
@@ -132,8 +133,8 @@ export class DanmakuReceiver extends EventTarget {
       case DANMAKU_TYPE.AUTH_REPLY:
         clearInterval(this.resetTimer)
         printLog(`房间 ${this.roomId} 通过认证`)
-        // 认证通过，每30秒发一次心跳包
-        setInterval(() => {
+        // 认证通过，每 30 秒发一次心跳包
+        this.heartbeatTimer = setInterval(() => {
           const heartbeatPayload = "陈睿你妈死了"
           if (this.ws && this.ws.readyState == WebSocket.OPEN) {
             this.ws.send(this.generatePacket(1, 2, heartbeatPayload))
@@ -192,6 +193,8 @@ export class DanmakuReceiver extends EventTarget {
     }
   }
   close() {
+    clearInterval(this.resetTimer)
+    clearInterval(this.heartbeatTimer)
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.close()
       this.ws = null

@@ -51,17 +51,21 @@ export class Recorder extends EventTarget {
 		return this.isRecording
 	}
 	public getAllowFallback() {
-		return this.addEventListener
+		return this.allowFallback
 	}
 	public setAllowFallback(val: boolean) {
 		this.allowFallback = val
 	}
 	public async stop() {
-		clearInterval(this.recordInterval)
-		this.recordInterval = -1
-		await this.outputFileStream?.write(encoder.encode('#EXT-X-ENDLIST'))
-		this.outputFileStream?.close()
-		this.outputFileStream = undefined
+		if (this.recordInterval !== -1) {
+			clearInterval(this.recordInterval)
+			this.recordInterval = -1
+		}
+		if (this.outputFileStream) {
+			await this.outputFileStream.write(encoder.encode('#EXT-X-ENDLIST'))
+			this.outputFileStream.close()
+			this.outputFileStream = undefined
+		}
 		this.clipList = []
 		this.isFirstRequest = true
 		this.isRecording = false
@@ -69,12 +73,11 @@ export class Recorder extends EventTarget {
 	}
 
 	private async createFileStream(extension: string) {
-		const title = (
-			await request('/xlive/web-room/v1/index/getRoomBaseInfo', 'GET', {
-				room_ids: this.roomId,
-				req_biz: 'BiLive',
-			})
-		)['data']['by_room_ids'][this.roomId.toString()].title
+		const roomInfo = await request('/xlive/web-room/v1/index/getRoomBaseInfo', 'GET', {
+			room_ids: this.roomId,
+			req_biz: 'BiLive',
+		})
+		const title = roomInfo?.data?.by_room_ids?.[this.roomId.toString()]?.title ?? '未命名直播间'
 		this.outputFilePath = `${this.outputPath}/${getTimeString()}-${title}.${extension}`
 		if (extension === 'm3u8') {
 			this.clipDir = this.outputFilePath.replace('.m3u8', '/')
@@ -84,9 +87,21 @@ export class Recorder extends EventTarget {
 		printLog(`房间${this.roomId} 创建新文件 ${this.outputFilePath}`)
 	}
 
-	// 获取直播流网址
+	private extractStreamUrl(data: any): string | null {
+		if (!data?.playurl_info?.playurl?.stream?.[0]?.format?.[0]?.codec?.[0]) {
+			return null
+		}
+		const codec = data.playurl_info.playurl.stream[0].format[0].codec[0]
+		const host = codec.url_info[0]?.host
+		const extra = codec.url_info[0]?.extra
+		const path = codec.base_url
+		if (host && extra && path) {
+			return `${host}${path}${extra}`
+		}
+		return null
+	}
+
 	private async getStreamUrl(): Promise<string> {
-		// 处理直播流信息
 		try {
 			const data = (
 				await request('/xlive/web-room/v2/index/getRoomPlayInfo', 'GET', {
@@ -105,19 +120,11 @@ export class Recorder extends EventTarget {
 				throw new Error(ERROR_NAME.LIVE_DIDN_START)
 			}
 			if (data.playurl_info && data.playurl_info.playurl) {
-				const host =
-					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0]
-						.host
-				const extra =
-					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0]
-						.extra
-				const path =
-					data.playurl_info.playurl.stream[0].format[0].codec[0].base_url
-				if (host && extra && path) {
-					return `${host}${path}${extra}`
-				}
-			} else if (this.allowFallback) {
-				const data = (
+				const streamUrl = this.extractStreamUrl(data)
+				if (streamUrl) return streamUrl
+			}
+			if (this.allowFallback) {
+				const fallbackData = (
 					await request('/xlive/web-room/v2/index/getRoomPlayInfo', 'GET', {
 						room_id: this.roomId,
 						no_playurl: 0,
@@ -130,17 +137,8 @@ export class Recorder extends EventTarget {
 						panorama: '1',
 					})
 				).data
-				const host =
-					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0]
-						.host
-				const extra =
-					data.playurl_info.playurl.stream[0].format[0].codec[0].url_info[0]
-						.extra
-				const path =
-					data.playurl_info.playurl.stream[0].format[0].codec[0].base_url
-				if (host && extra && path) {
-					return `${host}${path}${extra}`
-				}
+				const fallbackUrl = this.extractStreamUrl(fallbackData)
+				if (fallbackUrl) return fallbackUrl
 			}
 		} catch (e) {
 			throw e
@@ -152,6 +150,7 @@ export class Recorder extends EventTarget {
 		if (this.isRecording) {
 			return
 		}
+		await this.stop()
 		this.isRecording = true
 		// 获取直播流
 		while (await isStreaming(this.roomId)) {
@@ -284,8 +283,9 @@ export class Recorder extends EventTarget {
 						const data = await reader.read()
 						try {
 							flvStream.write(data.value!)
-						} catch {
-							// Do nothing here.
+						} catch (e) {
+							printWarning(`房间${this.roomId} FLV 写入错误：${e}`)
+							break
 						}
 						if (data.done) {
 							flvStream.destroy()

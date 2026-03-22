@@ -32,12 +32,14 @@ async function request(path: string, method: 'GET' | 'POST', data: object) {
 				cache: 'no-cache',
 			},
 		)
-		if (res.ok) {
-			const data = await res.json()
-			return data
+		if (!res.ok) {
+			throw new Error(`请求失败：${res.status} ${res.statusText}`)
 		}
+		const result = await res.json()
+		return result
 	} catch (e) {
 		printError(e)
+		throw e
 	}
 }
 export { request }

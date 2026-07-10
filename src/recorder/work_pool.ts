@@ -1,7 +1,7 @@
 interface Task {
 	url: string
 	path: string
-	headers: Record<string, string>
+	headers: Record<string, string> | HeadersInit
 }
 
 export class WorkerPool {

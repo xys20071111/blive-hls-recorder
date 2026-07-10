@@ -76,7 +76,7 @@ export class DanmakuReceiver extends EventTarget {
         this.resetTimer = setInterval(() => {
           //就关闭连接
           this.close()
-        }, 10000)
+        }, 10000) as unknown as number
         const payload = JSON.stringify({
           roomid: this.roomId,
           protover: 3,
@@ -139,7 +139,7 @@ export class DanmakuReceiver extends EventTarget {
           if (this.ws && this.ws.readyState == WebSocket.OPEN) {
             this.ws.send(this.generatePacket(1, 2, heartbeatPayload))
           }
-        }, 30000)
+        }, 30000) as unknown as number
         this.dispatchEvent(new Event("connected"))
         break
       case DANMAKU_TYPE.DATA:

@@ -12,23 +12,19 @@
   },
   "npm": {
     "bitwise@0.2.0": {
-      "integrity": "sha512-4NLksF0lItiB79vf3yvm8oxtyffuwTaRO6UoePdDj4EO7C2nKdd2h/KAOepsHXLf+xliVwbADzk1spx/b48jSg==",
-      "tarball": "https://registry.npmmirror.com/bitwise/-/bitwise-0.2.0.tgz"
+      "integrity": "sha512-4NLksF0lItiB79vf3yvm8oxtyffuwTaRO6UoePdDj4EO7C2nKdd2h/KAOepsHXLf+xliVwbADzk1spx/b48jSg=="
     },
     "debug@2.6.9": {
       "integrity": "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==",
       "dependencies": [
         "ms"
-      ],
-      "tarball": "https://registry.npmmirror.com/debug/-/debug-2.6.9.tgz"
+      ]
     },
     "lodash@4.17.21": {
-      "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==",
-      "tarball": "https://registry.npmmirror.com/lodash/-/lodash-4.17.21.tgz"
+      "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="
     },
     "ms@2.0.0": {
-      "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==",
-      "tarball": "https://registry.npmmirror.com/ms/-/ms-2.0.0.tgz"
+      "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A=="
     },
     "node-flv@0.9.11": {
       "integrity": "sha512-zDH0Jnkk7X/zbwlXThK/FnUKZhgAh98jUyIwaU3nDs9OW5ZOJtR2fEdkHLaEVvj+YBwTQmVwO2BDIGoIxkubzA==",
@@ -36,20 +32,17 @@
         "bitwise",
         "lodash",
         "stream-parser"
-      ],
-      "tarball": "https://registry.npmmirror.com/node-flv/-/node-flv-0.9.11.tgz"
+      ]
     },
     "prettier@3.3.3": {
       "integrity": "sha512-i2tDNA0O5IrMO757lfrdQZCc2jPNDVntV0m/+4whiDfWaTKfMNgR7Qz0NAeGz/nRqF4m5/6CLzbP4/liHt12Ew==",
-      "bin": true,
-      "tarball": "https://registry.npmmirror.com/prettier/-/prettier-3.3.3.tgz"
+      "bin": true
     },
     "stream-parser@0.3.1": {
       "integrity": "sha512-bJ/HgKq41nlKvlhccD5kaCr/P+Hu0wPNKPJOH7en+YrJu/9EgqUF+88w5Jb6KNcjOFMhfX4B2asfeAtIGuHObQ==",
       "dependencies": [
         "debug"
-      ],
-      "tarball": "https://registry.npmmirror.com/stream-parser/-/stream-parser-0.3.1.tgz"
+      ]
     }
   },
   "remote": {
@@ -217,7 +210,8 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@std/crypto@^1.0.5"
+      "jsr:@std/crypto@^1.0.5",
+      "npm:node-flv@*"
     ]
   }
 }

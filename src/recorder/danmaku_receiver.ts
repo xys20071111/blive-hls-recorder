@@ -2,7 +2,7 @@ import * as brotli from "brotli"
 import { Credential } from "@/IConfig.ts"
 import { printLog } from "@/utils/print_log.ts"
 import { getCookieValue } from "@/utils/getCookie.ts"
-import { appSign } from "@/utils/appSign.ts"
+import { appSign } from "@/utils/app_sign.ts"
 
 enum DANMAKU_PROTOCOL {
   JSON = 0,
